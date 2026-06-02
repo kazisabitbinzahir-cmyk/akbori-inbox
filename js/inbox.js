@@ -245,18 +245,85 @@ function renderMsgs(msgs){
     var div=document.createElement('div');
     div.className='msg '+(m.role==='customer'?'customer':'agent');
     var content='';
+
+    // Quote reply
+    if(m.reply_to_mid){
+      var quoted=msgs.find(function(q){return q.mid===m.reply_to_mid;});
+      if(quoted){
+        var qtext=quoted.has_image?'(image)':quoted.has_audio?'(audio)':quoted.has_video?'(video)':quoted.is_like?'(like)':quoted.is_sticker?'(sticker)':(quoted.text||'');
+        content+='<div style="background:rgba(0,0,0,0.08);border-left:3px solid #1877f2;padding:4px 8px;border-radius:6px;margin-bottom:4px;font-size:11px;color:#555;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+safeText(qtext)+'</div>';
+      }
+    }
+
+    // Image
     if(m.has_image&&m.image_url){
-      content='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(\''+m.image_url+'\')" alt="img">';
-      if(m.text&&m.text!=='(ছবি)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
-    }else{content=nl2br(safeText(m.text||''));}
-    var tb=m.tag==='AI'?'<span class="aitag">AI</span>':m.tag==='Human'?'<span class="hutag">Human</span>':'';
-    var tstr=m.time?new Date(m.time).toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'}):'';
-    var statusTxt=m.failed?'<span style="color:#e53935;font-size:9px">❌ Failed</span>':m.sending?'<span style="color:#aaa;font-size:9px">Sending...</span>':'';
+      content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(''+m.image_url+'')" alt="img">';
+      if(m.text&&m.text!=='(image)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
+    }
+    // Audio
+    else if(m.has_audio&&m.audio_url){
+      content+='<audio controls style="max-width:200px;margin:4px 0"><source src="'+m.audio_url+'"></audio>';
+    }
+    // Video
+    else if(m.has_video&&m.video_url){
+      content+='<video controls style="max-width:200px;border-radius:8px;margin:4px 0"><source src="'+m.video_url+'"></video>';
+    }
+    // Sticker
+    else if(m.is_sticker&&m.sticker_url){
+      content+='<img src="'+m.sticker_url+'" style="max-width:80px;border-radius:4px" alt="sticker">';
+    }
+    // Like
+    else if(m.is_like){
+      content+='<span style="font-size:28px">❤️</span>';
+    }
+    // Share/Link
+    else if(m.share_url){
+      content+='<a href="'+m.share_url+'" target="_blank" style="display:block;background:#f0f7ff;border:1px solid #90caf9;border-radius:8px;padding:8px;color:#1565c0;font-size:12px;text-decoration:none;max-width:200px">'+(m.share_title||m.share_url)+'<div style="font-size:10px;color:#888;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.share_url+'</div></a>';
+    }
+    // Location
+    else if(m.location_lat){
+      content+='<a href="https://maps.google.com/?q='+m.location_lat+','+m.location_lng+'" target="_blank" style="display:block;background:#f0f7ff;border:1px solid #90caf9;border-radius:8px;padding:8px;color:#1565c0;font-size:12px;text-decoration:none">📍 Location<div style="font-size:10px;color:#888">Tap to open maps</div></a>';
+    }
+    // Text
+    else{
+      content=nl2br(safeText(m.text||''));
+    }
+
+    var tb=m.tag==='AI'?'<span class="aitag">AI</span>':m.tag==='Human'?'<span class="hutag">Human</span>':m.tag==='reaction'?'<span style="font-size:9px;background:#fff3e0;color:#e65100;padding:1px 5px;border-radius:6px">reaction</span>':'';
+    var tstr=m.time?new Date(m.time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):''
+    var statusTxt=m.failed?'<span style="color:#e53935;font-size:9px">Failed</span>':m.sending?'<span style="color:#aaa;font-size:9px">Sending...</span>':'';
     var ids=showID&&m.role==='agent'&&selC?'<div class="mid">ID: '+selC.sender_id+'</div>':'';
-    div.innerHTML='<div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+'</div>'+ids;
+
+    // Quote button for agent reply
+    var quoteBtn='<span style="cursor:pointer;font-size:10px;opacity:0.5;margin-left:4px" onclick="setQuote(''+( m.mid||'')+'',''+safeText(m.text||'').replace(/'/g,"\\'")+'')" title="Quote reply">↩</span>';
+
+    div.innerHTML='<div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+quoteBtn+'</div>'+ids;
     area.appendChild(div);
   });
   area.scrollTop=area.scrollHeight;
+}
+
+var currentQuote=null;
+
+function setQuote(mid, text){
+  currentQuote={mid:mid, text:text};
+  var qbar=document.getElementById('quotebar');
+  if(!qbar){
+    qbar=document.createElement('div');
+    qbar.id='quotebar';
+    qbar.style.cssText='padding:6px 10px;background:#e3f2fd;border-left:3px solid #1877f2;font-size:11px;color:#555;display:flex;justify-content:space-between;align-items:center';
+    var replyarea=document.querySelector('.replyarea');
+    replyarea.insertBefore(qbar, replyarea.firstChild);
+  }
+  qbar.innerHTML='<span>Replying to: '+text.slice(0,50)+'...</span><span style="cursor:pointer;font-size:16px" onclick="clearQuote()">x</span>';
+  qbar.style.display='flex';
+  document.getElementById('rinput').focus();
+}
+
+function clearQuote(){
+  currentQuote=null;
+  var qbar=document.getElementById('quotebar');
+  if(qbar) qbar.style.display='none';
 }
 
 document.getElementById('idtog').addEventListener('change',function(){
@@ -395,7 +462,7 @@ async function sendReply(){
   if(rmode==='text'){
     var txt=document.getElementById('rinput').value.trim();if(!txt)return;
     if(showID)txt=txt+'\n\nID: '+sendConv.sender_id;
-    payload.type='text';payload.message=txt;
+    payload.type='text';payload.message=txt;if(currentQuote){payload.reply_to_mid=currentQuote.mid;}clearQuote();
   }else{
     if(!selFile)return;
     var b64=await f2b64(selFile);payload.type='image';payload.image_data=b64;payload.image_name=selFile.name;payload.image_type=selFile.type;
@@ -546,18 +613,4 @@ document.getElementById('rinput').addEventListener('keydown',function(e){if(e.ke
 document.addEventListener('click',function(e){if(!e.target.closest('.twrap'))document.getElementById('tsugg').style.display='none';});
 window.addEventListener('popstate',function(){if(selC)goBack();});
 
-initMobile();loadInbox(true);
-
-// Supabase Realtime
-var SUPABASE_URL = 'https://bkdbqpjourrnjbfrqedi.supabase.co';
-var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrZGJxcGpvdXJybmpiZnJxZWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MDI1MTQsImV4cCI6MjA5NTk3ODUxNH0.QRs2c-69GX1XbStIIJSCpBGD-C98gVfnd8pJws3m4fQ';
-
-if(window.supabase){
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  sb.channel('inbox-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, function(){ loadInbox(true); })
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, function(){ loadInbox(true); })
-    .subscribe();
-} else {
-  setInterval(function(){loadInbox(true);},10000);
-}
+initMobile();loadInbox(true);setInterval(function(){loadInbox(true);},10000);
