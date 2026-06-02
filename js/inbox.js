@@ -257,7 +257,7 @@ function renderMsgs(msgs){
 
     // Image
     if(m.has_image&&m.image_url){
-      content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(''+m.image_url+'')" alt="img">';
+      content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img">';
       if(m.text&&m.text!=='(image)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
     }
     // Audio
