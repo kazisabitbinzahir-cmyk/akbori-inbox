@@ -308,7 +308,9 @@ function renderMsgs(msgs){
     var ids=showID&&m.role==='agent'&&selC?'<div class="mid">ID: '+selC.sender_id+'</div>':'';
 
     // Quote button for agent reply
-    var quoteBtn='<span style="cursor:pointer;font-size:10px;opacity:0.5;margin-left:4px" onclick="setQuote(''+( m.mid||'')+'',''+safeText(m.text||'').replace(/'/g,"\\'")+'')" title="Quote reply">↩</span>';
+    var qmid=m.mid||'';
+    var qtxt=safeText(m.text||'').substring(0,50).replace(/"/g,'&quot;');
+    var quoteBtn='<span style="cursor:pointer;font-size:10px;opacity:0.5;margin-left:4px" onclick="setQuoteById(this)" data-mid="'+qmid+'" data-text="'+qtxt+'" title="Quote reply">&#x21A9;</span>';
 
     div.innerHTML='<div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+' '+tickHtml+quoteBtn+'</div>'+ids;
     area.appendChild(div);
@@ -317,6 +319,12 @@ function renderMsgs(msgs){
 }
 
 var currentQuote=null;
+
+function setQuoteById(el){
+  var mid=el.getAttribute('data-mid');
+  var text=el.getAttribute('data-text');
+  setQuote(mid, text);
+}
 
 function setQuote(mid, text){
   currentQuote={mid:mid, text:text};
