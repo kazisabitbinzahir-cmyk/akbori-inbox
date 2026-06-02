@@ -546,4 +546,18 @@ document.getElementById('rinput').addEventListener('keydown',function(e){if(e.ke
 document.addEventListener('click',function(e){if(!e.target.closest('.twrap'))document.getElementById('tsugg').style.display='none';});
 window.addEventListener('popstate',function(){if(selC)goBack();});
 
-initMobile();loadInbox(true);setInterval(function(){loadInbox(true);},10000);
+initMobile();loadInbox(true);
+
+// Supabase Realtime
+var SUPABASE_URL = 'https://bkdbqpjourrnjbfrqedi.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrZGJxcGpvdXJybmpiZnJxZWRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MDI1MTQsImV4cCI6MjA5NTk3ODUxNH0.QRs2c-69GX1XbStIIJSCpBGD-C98gVfnd8pJws3m4fQ';
+
+if(window.supabase){
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  sb.channel('inbox-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, function(){ loadInbox(true); })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, function(){ loadInbox(true); })
+    .subscribe();
+} else {
+  setInterval(function(){loadInbox(true);},10000);
+}
