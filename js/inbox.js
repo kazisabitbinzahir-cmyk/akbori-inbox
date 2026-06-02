@@ -290,14 +290,27 @@ function renderMsgs(msgs){
     }
 
     var tb=m.tag==='AI'?'<span class="aitag">AI</span>':m.tag==='Human'?'<span class="hutag">Human</span>':m.tag==='reaction'?'<span style="font-size:9px;background:#fff3e0;color:#e65100;padding:1px 5px;border-radius:6px">reaction</span>':'';
-    var tstr=m.time?new Date(m.time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):''
+    var tstr=m.time?new Date(m.time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'';
     var statusTxt=m.failed?'<span style="color:#e53935;font-size:9px">Failed</span>':m.sending?'<span style="color:#aaa;font-size:9px">Sending...</span>':'';
+    var tickHtml='';
+    if(m.role==='agent'&&selC&&m.time){
+      var mtime=new Date(m.time).getTime();
+      var lastRead=selC.last_read?new Date(selC.last_read).getTime():0;
+      var lastDelivered=selC.last_delivered?new Date(selC.last_delivered).getTime():0;
+      if(lastRead&&lastRead>=mtime){
+        tickHtml='<span style="color:#1877f2;font-size:11px">✓✓</span>';
+      } else if(lastDelivered&&lastDelivered>=mtime){
+        tickHtml='<span style="color:#aaa;font-size:11px">✓✓</span>';
+      } else {
+        tickHtml='<span style="color:#aaa;font-size:11px">✓</span>';
+      }
+    }
     var ids=showID&&m.role==='agent'&&selC?'<div class="mid">ID: '+selC.sender_id+'</div>':'';
 
     // Quote button for agent reply
     var quoteBtn='<span style="cursor:pointer;font-size:10px;opacity:0.5;margin-left:4px" onclick="setQuote(''+( m.mid||'')+'',''+safeText(m.text||'').replace(/'/g,"\\'")+'')" title="Quote reply">↩</span>';
 
-    div.innerHTML='<div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+quoteBtn+'</div>'+ids;
+    div.innerHTML='<div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+' '+tickHtml+quoteBtn+'</div>'+ids;
     area.appendChild(div);
   });
   area.scrollTop=area.scrollHeight;
