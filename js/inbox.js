@@ -80,7 +80,7 @@ function updateStats(){
   if(bbm){var cnt=selIDs.size>0?selIDs.size:filtC.length;if(cnt>0){bbm.classList.add('show');bbm.textContent='📢 Bulk ('+cnt+')';}else bbm.classList.remove('show');}
 }
 
-function isUnan(c){var m=c.messages||[];if(!m.length)return false;return m[m.length-1].role==='customer';}
+function isUnan(c){return c.last_role==='customer';}
 
 function buildFilters(){
   var pages=Array.from(new Set(allC.map(function(c){return c.page_name;}).filter(Boolean)));
