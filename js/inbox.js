@@ -91,15 +91,41 @@ function buildFilters(){
   pages.forEach(function(p){var b=document.createElement('button');b.className='fbtn'+(p===ap?' active':'');b.textContent=p;b.style.borderColor=PC[p]||'#ddd';b.onclick=function(){setPF(p,b);};pf.appendChild(b);});
   var tf=document.getElementById('tfrow');
   tf.innerHTML='<button class="fbtn active" onclick="setTF(\'all\',this)">All Tags</button>';
+  var grouped={};var nocat=[];
   globalTags.forEach(function(gt){
-    var cat=tagCategories.find(function(c){return c.name===gt.category;});
-    var b=document.createElement('button');
-    b.className='fbtn'+(aTF.has(gt.tag)?' active':'');
-    b.textContent=gt.tag;
-    if(cat)b.style.borderColor=cat.color;
-    b.onclick=function(){setTF(gt.tag,b);};
-    tf.appendChild(b);
+    if(gt.category){if(!grouped[gt.category])grouped[gt.category]=[];grouped[gt.category].push(gt);}
+    else{nocat.push(gt);}
   });
+  tagCategories.forEach(function(cat){
+    if(!grouped[cat.name]||!grouped[cat.name].length)return;
+    var lbl=document.createElement('span');
+    lbl.style.cssText='font-size:10px;font-weight:500;color:#fff;background:'+cat.color+';border-radius:6px;padding:2px 7px;margin-left:4px;align-self:center;';
+    lbl.textContent=cat.name;
+    tf.appendChild(lbl);
+    grouped[cat.name].forEach(function(gt){
+      var b=document.createElement('button');
+      b.className='fbtn'+(aTF.has(gt.tag)?' active':'');
+      b.textContent=gt.tag;
+      b.style.borderColor=cat.color;
+      b.onclick=function(){setTF(gt.tag,b);};
+      tf.appendChild(b);
+    });
+  });
+  if(nocat.length){
+    if(tagCategories.length){
+      var lbl2=document.createElement('span');
+      lbl2.style.cssText='font-size:10px;font-weight:500;color:var(--color-text-secondary);border:0.5px solid #ccc;border-radius:6px;padding:2px 7px;margin-left:4px;align-self:center;';
+      lbl2.textContent='Other';
+      tf.appendChild(lbl2);
+    }
+    nocat.forEach(function(gt){
+      var b=document.createElement('button');
+      b.className='fbtn'+(aTF.has(gt.tag)?' active':'');
+      b.textContent=gt.tag;
+      b.onclick=function(){setTF(gt.tag,b);};
+      tf.appendChild(b);
+    });
+  }
 }
 
 function setPF(v,btn){aPF=v;document.getElementById('pfrow').querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');applyFilters();}
