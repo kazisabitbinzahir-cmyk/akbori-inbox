@@ -204,6 +204,7 @@ function selectConv(conv){
   document.getElementById('idtbg').style.background=indID?'#1877f2':'#ccc';
   document.getElementById('idtknob').style.transform=indID?'translateX(14px)':'translateX(0)';
   document.getElementById('nota').value=conv.notes||'';
+  var cp=document.getElementById('chatpanel');if(cp)cp.style.display='none';
   document.getElementById('rinput').value='';
   selFile=null;
   document.getElementById('iprev').style.display='none';
@@ -674,6 +675,13 @@ function renderSB(conv){
     bar.appendChild(btn);
   });
   bar.classList.add('vis');
+}
+
+function toggleChatPanel(){
+  var panel=document.getElementById('chatpanel');
+  if(!panel)return;
+  var isOpen=panel.style.display==='flex';
+  panel.style.display=isOpen?'none':'flex';
 }
 
 function goBack(){document.getElementById('chatarea').classList.remove('active');document.getElementById('sidebar').classList.remove('hidden');selC=null;document.getElementById('estate').style.display='flex';document.getElementById('chatview').style.display='none';}
