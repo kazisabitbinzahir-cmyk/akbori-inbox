@@ -942,11 +942,31 @@ document.addEventListener('click',function(e){
 
 initMobile();loadInbox(true);
 
+function handleNewMessage(payload){
+  var msg=payload.new;
+  if(!msg||!msg.user_id)return;
+  var conv=allC.find(function(c){return c.user_id===msg.user_id;});
+  if(!conv)return;
+  conv.messages=conv.messages||[];
+  var exists=conv.messages.some(function(m){return m.id===msg.id;});
+  if(exists)return;
+  conv.messages.push(msg);
+  conv.last_message=msg.text||conv.last_message;
+  conv.last_time=msg.time||conv.last_time;
+  if(msg.role==='customer'&&msg.tag!=='reaction'){
+    conv.unread=true;
+    if(snd)snd();
+    if(globalAuto)checkAndAutoSend(conv,msg);
+  }
+  applyFilters();updateStats();
+  if(selC&&selC.user_id===msg.user_id){selC=conv;renderMsgs(conv.messages);renderSB(conv);}
+}
+
 if(window.supabase){
   var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   sb.channel('inbox-changes')
     .on('postgres_changes',{event:'*',schema:'public',table:'conversations'},function(){loadInbox(true);})
-    .on('postgres_changes',{event:'*',schema:'public',table:'messages'},function(){loadInbox(true);})
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},handleNewMessage)
     .subscribe();
 }else{
   setInterval(function(){loadInbox(true);},10000);
