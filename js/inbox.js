@@ -603,7 +603,11 @@ function toggleFP(){var p=document.getElementById('fpanel'),i=document.getElemen
 function initMobile(){if(window.innerWidth<=700){document.getElementById('fpanel').classList.add('collapsed');document.getElementById('ftbar').style.display='flex';}}
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
 
-document.getElementById('rinput').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendReply();}});
+document.getElementById('rinput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!e.shiftKey){
+    if(window.innerWidth>700){e.preventDefault();sendReply();}
+  }
+});
 document.addEventListener('click',function(e){if(!e.target.closest('.twrap'))document.getElementById('tsugg').style.display='none';});
 window.addEventListener('popstate',function(){if(selC)goBack();});
 
