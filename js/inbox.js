@@ -618,6 +618,24 @@ function renderTMgr(){
     list.appendChild(div);
   });
 }
+async function assignTagCategory(tag, categoryName){
+  // Update all tags rows with this tag name
+  await this.helpers ? null : null;
+  await post({action:'assign_tag_category',tag:tag,category:categoryName||null});
+  // Update local tagCategories
+  tagCategories.forEach(function(cat){
+    if(cat.tags)cat.tags=cat.tags.filter(function(t){return t!==tag;});
+  });
+  if(categoryName){
+    var cat=tagCategories.find(function(c){return c.name===categoryName;});
+    if(cat){cat.tags=cat.tags||[];if(!cat.tags.includes(tag))cat.tags.push(tag);}
+  }
+  allTagCategories=tagCategories;
+  renderTMgr();
+  applyFilters();
+  showToast('Category assigned','success');
+}
+
 function addGTag(){var v=document.getElementById('tmgrin').value.trim();if(!v)return;allTags.add(v);document.getElementById('tmgrin').value='';renderTMgr();buildFilters();showToast('Tag: '+v,'success');}
 async function delGTag(tag){
   if(!confirm('"'+tag+'" delete from all conversations?'))return;
