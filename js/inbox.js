@@ -241,17 +241,7 @@ function renderChatTags(){
   });
 }
 
-async function fetchMsgs(conv){
-  if(conv.messages&&conv.messages.length>0)return;
-  try{
-    var res=await fetch(SUPABASE_URL+'/rest/v1/messages?user_id=eq.'+conv.user_id+'&order=time.asc',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
-    var msgs=await res.json();
-    conv.messages=msgs;
-    var i=allC.findIndex(function(c){return c.userId===conv.userId;});if(i>=0)allC[i].messages=msgs;
-  }catch(e){}
-}
-
-async function selectConv(conv){
+function selectConv(conv){
   selC=conv;
   if(conv.unread){conv.unread=false;var i=allC.findIndex(function(c){return c.userId===conv.userId;});if(i>=0)allC[i].unread=false;post({action:'mark_read',sender_id:conv.sender_id,page_id:conv.page_id});}
   document.getElementById('estate').style.display='none';
@@ -277,8 +267,6 @@ async function selectConv(conv){
   document.getElementById('fiinput').value='';
   setMode('text');
   renderMsgs(conv.messages||[]);renderChatTags();renderSB(conv);renderSavedBar();applyFilters();
-  await fetchMsgs(conv);
-  if(selC&&selC.userId===conv.userId)renderMsgs(conv.messages||[]);
   if(window.innerWidth<=700){
     document.getElementById('sidebar').classList.add('hidden');
     document.getElementById('chatarea').classList.add('active');
