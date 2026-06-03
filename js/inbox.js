@@ -62,7 +62,6 @@ async function loadInbox(silent){
     allC.forEach(function(c){(c.tags||[]).forEach(function(t){allTags.add(t);});});
     buildFilters(); applyFilters(); updateStats();
     if(!silent){document.getElementById('rfbtn').textContent='Fetched';setTimeout(function(){document.getElementById('rfbtn').textContent='Refresh';},2000);}
-    if(selC){ var upd=allC.find(function(c){return c.userId===selC.userId;}); if(upd){var pl=(selC.messages||[]).length;selC=upd;if((upd.messages||[]).length>pl){renderMsgs(upd.messages||[]);renderSB(upd);}} }
   }catch(e){
     if(!silent){document.getElementById('rfbtn').textContent='Failed';setTimeout(function(){document.getElementById('rfbtn').textContent='Refresh';},2000);}
   }
