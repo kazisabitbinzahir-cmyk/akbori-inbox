@@ -175,3 +175,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cfmgrrow{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
 .cfmgrrow input,.cfmgrrow select{flex:1;min-width:80px;padding:4px 7px;border:1px solid #ddd;border-radius:6px;font-size:11px;outline:none}
 .cfmgradd{padding:4px 10px;background:#2e7d32;color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer}
+
+/* Mobile controls dropdown */
+.mobile-ctrl-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:5px 10px;border-radius:10px;font-size:13px;cursor:pointer;display:none}
+.mobilecontrols{display:none;position:absolute;top:44px;right:8px;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:12px;flex-direction:column;gap:8px;z-index:100;min-width:200px}
+.mobilecontrols .gtog{color:#333}
+.mobilecontrols .rbtn{background:#1877f2;color:#fff;padding:6px 12px;border-radius:8px;border:none;font-size:12px;cursor:pointer;text-align:left}
+.mobilecontrols .bbtn{background:#e53935;color:#fff;padding:6px 12px;border-radius:8px;border:none;font-size:12px;cursor:pointer;text-align:left;display:none}
+.mobilecontrols .bbtn.show{display:block}
+.mobilecontrols .stats{font-size:11px;color:#777;padding:4px 0;border-top:1px solid #f0f0f0;margin-top:2px}
+@media(max-width:700px){
+  .tcontrols{display:none!important}
+  .mobile-ctrl-btn{display:block}
+  .topbar{position:relative}
+}
