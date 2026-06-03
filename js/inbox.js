@@ -10,7 +10,6 @@ var contactFields=[];
 var showArchived=false;
 var tagCategories=[], allTagCategories=[];
 var editTCID=null;
-var globalTags=[];
 
 document.addEventListener('click', function(){
   try{ var ctx=new(window.AudioContext||window.webkitAudioContext)(); snd=function(){var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(0.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);o.start();o.stop(ctx.currentTime+0.3);}; }catch(e){}
@@ -40,7 +39,6 @@ async function loadInbox(silent){
       });
     }
     lastCnt=nc.length;
-    var selPrevLen=selC?(selC.messages||[]).length:-1;
     nc.forEach(function(n){
       var ex=allC.find(function(c){return c.userId===n.userId;});
       if(ex){n.human_active=ex.human_active;n.notes=ex.notes!==undefined?ex.notes:n.notes;if(ex.id_tag!==undefined)n.id_tag=ex.id_tag;}
@@ -51,10 +49,6 @@ async function loadInbox(silent){
       tagCategories=data.tag_categories;
       allTagCategories=data.tag_categories;
     }
-    if(data.global_tags){
-      globalTags=data.global_tags;
-      allTags=new Set(globalTags.map(function(t){return t.tag;}));
-    }
     if(data.saved_messages)savedMessages=data.saved_messages;
     if(data.contact_fields)contactFields=data.contact_fields;
     if(data.global_ai!==undefined){ globalAI=data.global_ai; document.getElementById('gai').checked=globalAI; document.getElementById('gaibg').style.background=globalAI?'#4caf50':'#e53935'; document.getElementById('gaiknob').style.transform=globalAI?'translateX(0)':'translateX(14px)'; document.getElementById('gailbl').textContent=globalAI?'ON':'OFF'; }
@@ -63,7 +57,7 @@ async function loadInbox(silent){
     allC.forEach(function(c){(c.tags||[]).forEach(function(t){allTags.add(t);});});
     buildFilters(); applyFilters(); updateStats();
     if(!silent){document.getElementById('rfbtn').textContent='Fetched';setTimeout(function(){document.getElementById('rfbtn').textContent='Refresh';},2000);}
-    if(selC){ var upd=allC.find(function(c){return c.userId===selC.userId;}); if(upd){selC=upd;if(selPrevLen>=0&&(upd.messages||[]).length>selPrevLen){renderMsgs(upd.messages||[]);renderSB(upd);}} }
+    if(selC){ var upd=allC.find(function(c){return c.userId===selC.userId;}); if(upd){var pl=(selC.messages||[]).length;selC=upd;if((upd.messages||[]).length>pl){renderMsgs(upd.messages||[]);renderSB(upd);}} }
   }catch(e){
     if(!silent){document.getElementById('rfbtn').textContent='Failed';setTimeout(function(){document.getElementById('rfbtn').textContent='Refresh';},2000);}
   }
@@ -380,7 +374,7 @@ function showTS(){
   var v=document.getElementById('tinput').value.toLowerCase();
   var box=document.getElementById('tsugg');
   if(!v){box.style.display='none';return;}
-  var m=globalTags.map(function(t){return t.tag;}).filter(function(t){return t.toLowerCase().includes(v);});
+  var m=Array.from(allTags).filter(function(t){return t.toLowerCase().includes(v);});
   if(!m.length){box.style.display='none';return;}
   box.innerHTML='';
   m.forEach(function(t){var d=document.createElement('div');d.className='tsuggitem';d.textContent=t;d.onclick=function(){document.getElementById('tinput').value=t;box.style.display='none';addTag();};box.appendChild(d);});
@@ -606,18 +600,7 @@ async function unarchiveConv(userId, senderId, pageId){
   showToast('Unarchived','success');
 }
 
-function openTMgr(){
-  // Populate category dropdown
-  var sel=document.getElementById('tmgrcat');
-  if(sel){
-    sel.innerHTML='<option value="">No category</option>';
-    tagCategories.forEach(function(cat){
-      sel.innerHTML+='<option value="'+cat.name+'">'+cat.name+'</option>';
-    });
-  }
-  renderTMgr();
-  document.getElementById('tmgrmodal').classList.add('open');
-}
+function openTMgr(){renderTMgr();document.getElementById('tmgrmodal').classList.add('open');}
 function closeTMgr(){document.getElementById('tmgrmodal').classList.remove('open');}
 function renderTMgr(){
   var df=document.getElementById('dfrom').value,dt=document.getElementById('dto').value;
@@ -635,29 +618,10 @@ function renderTMgr(){
     list.appendChild(div);
   });
 }
-async function addGTag(){
-  var v=document.getElementById('tmgrin').value.trim();
-  if(!v)return;
-  var catEl=document.getElementById('tmgrcat');
-  var cat=catEl?catEl.value:'';
-  await post({action:'add_global_tag',tag:v,category:cat||null});
-  globalTags.push({tag:v,category:cat||null});
-  allTags.add(v);
-  // Update local tagCategories if category selected
-  if(cat){
-    var catObj=tagCategories.find(function(c){return c.name===cat;});
-    if(catObj){catObj.tags=catObj.tags||[];if(!catObj.tags.includes(v))catObj.tags.push(v);}
-  }
-  document.getElementById('tmgrin').value='';
-  if(catEl)catEl.value='';
-  renderTMgr();buildFilters();showToast('Tag: '+v,'success');
-}
-
 async function assignTagCategory(tag, categoryName){
+  // Update all tags rows with this tag name
+  await this.helpers ? null : null;
   await post({action:'assign_tag_category',tag:tag,category:categoryName||null});
-  // Update local globalTags
-  var gt=globalTags.find(function(t){return t.tag===tag;});
-  if(gt)gt.category=categoryName||null;
   // Update local tagCategories
   tagCategories.forEach(function(cat){
     if(cat.tags)cat.tags=cat.tags.filter(function(t){return t!==tag;});
@@ -672,12 +636,11 @@ async function assignTagCategory(tag, categoryName){
   showToast('Category assigned','success');
 }
 
-
+function addGTag(){var v=document.getElementById('tmgrin').value.trim();if(!v)return;allTags.add(v);document.getElementById('tmgrin').value='';renderTMgr();buildFilters();showToast('Tag: '+v,'success');}
 async function delGTag(tag){
   if(!confirm('"'+tag+'" delete from all conversations?'))return;
   allC.forEach(function(c){if((c.tags||[]).includes(tag))c.tags=c.tags.filter(function(t){return t!==tag;});});
   allTags.delete(tag);
-  globalTags=globalTags.filter(function(t){return t.tag!==tag;});
   await post({action:'delete_global_tag',tag:tag});
   if(selC){selC.tags=(selC.tags||[]).filter(function(t){return t!==tag;});renderChatTags();}
   renderTMgr();buildFilters();applyFilters();showToast('Deleted: '+tag,'info');
