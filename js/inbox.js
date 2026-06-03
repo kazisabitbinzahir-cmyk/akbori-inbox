@@ -242,13 +242,14 @@ function renderChatTags(){
 }
 
 async function fetchMsgs(conv){
-  if(conv.messages&&conv.messages.length>0)return;
+  if(conv._msgsLoaded)return;
+  conv._msgsLoaded=true;
   try{
     var res=await fetch(SUPABASE_URL+'/rest/v1/messages?user_id=eq.'+conv.user_id+'&order=time.asc',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
     var msgs=await res.json();
     conv.messages=msgs;
     var i=allC.findIndex(function(c){return c.userId===conv.userId;});if(i>=0)allC[i].messages=msgs;
-  }catch(e){}
+  }catch(e){conv._msgsLoaded=false;}
 }
 
 async function selectConv(conv){
@@ -957,6 +958,7 @@ initMobile();loadInbox(true);
 function handleNewMessage(payload){
   var msg=payload.new;
   if(!msg||!msg.user_id)return;
+  if(msg.role==='agent')return;
   var conv=allC.find(function(c){return c.user_id===msg.user_id;});
   if(!conv)return;
   conv.messages=conv.messages||[];
