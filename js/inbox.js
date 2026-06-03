@@ -1053,16 +1053,7 @@ function applyFilters(){
 }
 
 // Override selectConv to populate order status dropdown
-var _origSelectConv=selectConv;
-async function selectConv(conv){
-  _origSelectConv(conv);
-  var sel=document.getElementById('convos_select');
-  if(!sel)return;
-  sel.innerHTML='<option value="">No status</option>';
-  orderStatuses.forEach(function(os){
-    sel.innerHTML+='<option value="'+os.name+'"'+(conv.order_status===os.name?' selected':'')+'>'+os.name+'</option>';
-  });
-}
+
 
 async function setConvOrderStatus(val){
   if(!selC)return;
