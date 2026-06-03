@@ -266,7 +266,7 @@ function selectConv(conv){
   document.getElementById('iprev').style.display='none';
   document.getElementById('fiinput').value='';
   setMode('text');
-  renderMsgs(conv.messages||[]);renderChatTags();renderSB(conv);renderSavedBar();applyFilters();
+  renderMsgs(conv.messages||[]);renderChatTags();renderSB(conv);renderSavedBar();renderList();
   if(window.innerWidth<=700){
     document.getElementById('sidebar').classList.add('hidden');
     document.getElementById('chatarea').classList.add('active');
