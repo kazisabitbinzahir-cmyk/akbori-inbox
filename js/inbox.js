@@ -132,6 +132,7 @@ function buildFilters(){
     });
     tf.appendChild(row2);
   }
+  buildOSFilter();
 }
 
 function setPF(v,btn){aPF=v;document.getElementById('pfrow').querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');applyFilters();}
@@ -177,6 +178,7 @@ function applyFilters(){
     return true;
   });
   filtC.sort(function(a,b){var ta=new Date(a.last_time||0).getTime(),tb=new Date(b.last_time||0).getTime();return sortOrd==='asc'?ta-tb:tb-ta;});
+  if(aOSF!==null)filtC=filtC.filter(function(c){return c.order_status===aOSF;});
   renderList(); updateBulkBtn();
 }
 
@@ -205,10 +207,12 @@ function renderList(){
     var hi=conv.human_active?'<span class="hind">H</span>':'';
     var ni=conv.notes?'<span class="nind">N</span>':'';
     var ci=conv.contact&&Object.values(conv.contact).some(function(v){return v&&v.trim();})?'<span class="nind" style="background:#e8f5e9;color:#2e7d32">C</span>':'';
+    var osObj=conv.order_status?orderStatuses.find(function(o){return o.name===conv.order_status;}):null;
+    var osBdg=osObj?'<span style="font-size:9px;padding:1px 6px;border-radius:8px;color:#fff;background:'+osObj.color+';margin-left:3px">'+conv.order_status+'</span>':'';
     div.innerHTML='<input type="checkbox" class="cchk"'+(selIDs.has(conv.userId)?' checked':'')+' onclick="toggleSel(event,\''+conv.userId+'\')">'
       +'<div class="av" style="background:'+col+'">'+init+'<div class="avbdg '+bc+'"></div></div>'
       +'<div class="cinfo"><div class="ctop"><span class="cname'+(conv.unread?' bold':'')+'">'+((conv.contact&&conv.contact.name)||conv.sender_id||'?')+hi+ni+ci+'</span><span class="ctime">'+ts(conv.last_time)+'</span></div>'
-      +'<div><span class="cpbdg" style="background:'+col+'">'+(conv.page_name||'?')+'</span></div>'
+      +'<div><span class="cpbdg" style="background:'+col+'">'+(conv.page_name||'?')+'</span>'+osBdg+'</div>'
       +'<div class="cprev">'+(conv.has_image?'📷 ':'')+( conv.last_message||'')+'</div>'
       +'<div class="ctags">'+th+'</div></div>';
     div.addEventListener('click',function(e){if(e.target.type!=='checkbox')selectConv(conv);});
@@ -267,6 +271,7 @@ function selectConv(conv){
   document.getElementById('fiinput').value='';
   setMode('text');
   renderMsgs(conv.messages||[]);renderChatTags();renderSB(conv);renderSavedBar();renderList();
+  var _ossel=document.getElementById('convos_select');if(_ossel){_ossel.innerHTML='<option value="">No status</option>';orderStatuses.forEach(function(os){_ossel.innerHTML+='<option value="'+os.name+'"'+(conv.order_status===os.name?' selected':'')+'>'+os.name+'</option>';});}
   if(window.innerWidth<=700){
     document.getElementById('sidebar').classList.add('hidden');
     document.getElementById('chatarea').classList.add('active');
@@ -973,23 +978,10 @@ if(window.supabase){
 }else{
   setInterval(function(){loadInbox(true);},10000);
 }
+
 // ORDER STATUS
 var orderStatuses=[];
 var aOSF=null;
-
-function setOSF(v,btn){
-  aOSF=v;
-  document.getElementById('osrow').querySelectorAll('.fbtn').forEach(function(b){
-    b.classList.remove('active');
-    b.style.background='';b.style.color='';
-  });
-  btn.classList.add('active');
-  if(v!==null){
-    var os=orderStatuses.find(function(o){return o.name===v;});
-    if(os){btn.style.background=os.color;btn.style.color='#fff';}
-  }
-  applyFilters();
-}
 
 function buildOSFilter(){
   var osrow=document.getElementById('osrow');
@@ -1006,54 +998,13 @@ function buildOSFilter(){
   });
 }
 
-// Override renderList to include order status badge
-function renderList(){
-  var list=document.getElementById('clist');
-  if(!filtC.length){list.innerHTML='<div class="noconv">No conversations</div>';return;}
-  list.innerHTML='';
-  filtC.forEach(function(conv){
-    var col=PC[conv.page_name]||'#888';
-    var init=(conv.sender_id||'').slice(-4);
-    var bc=conv.unread?'bunread':isUnan(conv)?'bunan':'bread';
-    var tags=conv.tags||[];
-    var div=document.createElement('div');
-    div.className='citem'+(selC&&selC.userId===conv.userId?' active':'')+(selIDs.has(conv.userId)?' selected':'');
-    var th='';
-    tags.forEach(function(t){
-      var cat=allTagCategories.find(function(c){return c.tags&&c.tags.includes(t);});
-      var catColor=cat?cat.color:'#e3f2fd';
-      var catTextColor=cat?'#fff':'#1565c0';
-      th+='<span class="ctag" data-uid="'+conv.userId+'" data-tag="'+t+'" style="background:'+catColor+';color:'+catTextColor+'">'+t+' <span class="tdel" style="cursor:pointer;font-weight:bold;opacity:0.7">x</span></span>';
-    });
-    var hi=conv.human_active?'<span class="hind">H</span>':'';
-    var ni=conv.notes?'<span class="nind">N</span>':'';
-    var ci=conv.contact&&Object.values(conv.contact).some(function(v){return v&&v.trim();})?'<span class="nind" style="background:#e8f5e9;color:#2e7d32">C</span>':'';
-    var osObj=conv.order_status?orderStatuses.find(function(o){return o.name===conv.order_status;}):null;
-    var osBdg=osObj?'<span style="font-size:9px;padding:1px 6px;border-radius:8px;color:#fff;background:'+osObj.color+';margin-left:3px">'+conv.order_status+'</span>':'';
-    div.innerHTML='<input type="checkbox" class="cchk"'+(selIDs.has(conv.userId)?' checked':'')+' onclick="toggleSel(event,\''+conv.userId+'\')">'
-      +'<div class="av" style="background:'+col+'">'+init+'<div class="avbdg '+bc+'"></div></div>'
-      +'<div class="cinfo"><div class="ctop"><span class="cname'+(conv.unread?' bold':'')+'">'+((conv.contact&&conv.contact.name)||conv.sender_id||'?')+hi+ni+ci+'</span><span class="ctime">'+ts(conv.last_time)+'</span></div>'
-      +'<div><span class="cpbdg" style="background:'+col+'">'+(conv.page_name||'?')+'</span>'+osBdg+'</div>'
-      +'<div class="cprev">'+(conv.has_image?'📷 ':'')+( conv.last_message||'')+'</div>'
-      +'<div class="ctags">'+th+'</div></div>';
-    div.addEventListener('click',function(e){if(e.target.type!=='checkbox')selectConv(conv);});
-    list.appendChild(div);
-  });
+function setOSF(v,btn){
+  aOSF=v;
+  document.getElementById('osrow').querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('active');b.style.background='';b.style.color='';});
+  btn.classList.add('active');
+  if(v!==null){var os=orderStatuses.find(function(o){return o.name===v;});if(os){btn.style.background=os.color;btn.style.color='#fff';}}
+  applyFilters();
 }
-
-// Override applyFilters to include order status filter
-var _origApplyFilters=applyFilters;
-function applyFilters(){
-  _origApplyFilters();
-  if(aOSF!==null){
-    filtC=filtC.filter(function(c){return c.order_status===aOSF;});
-    renderList();updateBulkBtn();
-  }
-  buildOSFilter();
-}
-
-// Override selectConv to populate order status dropdown
-
 
 async function setConvOrderStatus(val){
   if(!selC)return;
@@ -1063,7 +1014,6 @@ async function setConvOrderStatus(val){
   renderList();showToast('Status updated','success');
 }
 
-// ORDER STATUS MANAGER
 function openOSMgr(){renderOSMgr();document.getElementById('osmgrmodal').classList.add('open');}
 function closeOSMgr(){document.getElementById('osmgrmodal').classList.remove('open');}
 function renderOSMgr(){
@@ -1093,7 +1043,6 @@ async function delOS(id){
   buildOSFilter();renderOSMgr();showToast('Deleted','info');
 }
 
-// BULK ORDER STATUS
 function openBulkOS(){
   var tgts=selIDs.size>0?allC.filter(function(c){return selIDs.has(c.userId);}):filtC;
   document.getElementById('bosinfo').textContent=tgts.length+' conversations';
