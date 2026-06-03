@@ -56,6 +56,7 @@ async function loadInbox(silent){
     }
     if(data.saved_messages)savedMessages=data.saved_messages;
     if(data.contact_fields)contactFields=data.contact_fields;
+    if(data.order_statuses)orderStatuses=data.order_statuses;
     if(data.global_ai!==undefined){ globalAI=data.global_ai; document.getElementById('gai').checked=globalAI; document.getElementById('gaibg').style.background=globalAI?'#4caf50':'#e53935'; document.getElementById('gaiknob').style.transform=globalAI?'translateX(0)':'translateX(14px)'; document.getElementById('gailbl').textContent=globalAI?'ON':'OFF'; }
     if(data.global_id!==undefined){ globalID=data.global_id; document.getElementById('gid').checked=globalID; document.getElementById('gidbg').style.background=globalID?'#1877f2':'#ccc'; document.getElementById('gidknob').style.transform=globalID?'translateX(14px)':'translateX(0)'; document.getElementById('gidlbl').textContent=globalID?'ON':'OFF'; }
     if(data.global_auto!==undefined){ globalAuto=data.global_auto; document.getElementById('gauto').checked=globalAuto; document.getElementById('gautobg').style.background=globalAuto?'#4caf50':'#ccc'; document.getElementById('gautoknob').style.transform=globalAuto?'translateX(14px)':'translateX(0)'; document.getElementById('gautolbl').textContent=globalAuto?'ON':'OFF'; }
@@ -971,4 +972,151 @@ if(window.supabase){
     .subscribe();
 }else{
   setInterval(function(){loadInbox(true);},10000);
+}
+// ORDER STATUS
+var orderStatuses=[];
+var aOSF=null;
+
+function setOSF(v,btn){
+  aOSF=v;
+  document.getElementById('osrow').querySelectorAll('.fbtn').forEach(function(b){
+    b.classList.remove('active');
+    b.style.background='';b.style.color='';
+  });
+  btn.classList.add('active');
+  if(v!==null){
+    var os=orderStatuses.find(function(o){return o.name===v;});
+    if(os){btn.style.background=os.color;btn.style.color='#fff';}
+  }
+  applyFilters();
+}
+
+function buildOSFilter(){
+  var osrow=document.getElementById('osrow');
+  if(!osrow)return;
+  osrow.innerHTML='<button class="fbtn'+(aOSF===null?' active':'')+'" onclick="setOSF(null,this)">All Status</button>';
+  orderStatuses.forEach(function(os){
+    var b=document.createElement('button');
+    b.className='fbtn'+(aOSF===os.name?' active':'');
+    b.textContent=os.name;
+    b.style.borderColor=os.color;
+    if(aOSF===os.name){b.style.background=os.color;b.style.color='#fff';}
+    b.onclick=function(){setOSF(os.name,b);};
+    osrow.appendChild(b);
+  });
+}
+
+// Override renderList to include order status badge
+function renderList(){
+  var list=document.getElementById('clist');
+  if(!filtC.length){list.innerHTML='<div class="noconv">No conversations</div>';return;}
+  list.innerHTML='';
+  filtC.forEach(function(conv){
+    var col=PC[conv.page_name]||'#888';
+    var init=(conv.sender_id||'').slice(-4);
+    var bc=conv.unread?'bunread':isUnan(conv)?'bunan':'bread';
+    var tags=conv.tags||[];
+    var div=document.createElement('div');
+    div.className='citem'+(selC&&selC.userId===conv.userId?' active':'')+(selIDs.has(conv.userId)?' selected':'');
+    var th='';
+    tags.forEach(function(t){
+      var cat=allTagCategories.find(function(c){return c.tags&&c.tags.includes(t);});
+      var catColor=cat?cat.color:'#e3f2fd';
+      var catTextColor=cat?'#fff':'#1565c0';
+      th+='<span class="ctag" data-uid="'+conv.userId+'" data-tag="'+t+'" style="background:'+catColor+';color:'+catTextColor+'">'+t+' <span class="tdel" style="cursor:pointer;font-weight:bold;opacity:0.7">x</span></span>';
+    });
+    var hi=conv.human_active?'<span class="hind">H</span>':'';
+    var ni=conv.notes?'<span class="nind">N</span>':'';
+    var ci=conv.contact&&Object.values(conv.contact).some(function(v){return v&&v.trim();})?'<span class="nind" style="background:#e8f5e9;color:#2e7d32">C</span>':'';
+    var osObj=conv.order_status?orderStatuses.find(function(o){return o.name===conv.order_status;}):null;
+    var osBdg=osObj?'<span style="font-size:9px;padding:1px 6px;border-radius:8px;color:#fff;background:'+osObj.color+';margin-left:3px">'+conv.order_status+'</span>':'';
+    div.innerHTML='<input type="checkbox" class="cchk"'+(selIDs.has(conv.userId)?' checked':'')+' onclick="toggleSel(event,\''+conv.userId+'\')">'
+      +'<div class="av" style="background:'+col+'">'+init+'<div class="avbdg '+bc+'"></div></div>'
+      +'<div class="cinfo"><div class="ctop"><span class="cname'+(conv.unread?' bold':'')+'">'+((conv.contact&&conv.contact.name)||conv.sender_id||'?')+hi+ni+ci+'</span><span class="ctime">'+ts(conv.last_time)+'</span></div>'
+      +'<div><span class="cpbdg" style="background:'+col+'">'+(conv.page_name||'?')+'</span>'+osBdg+'</div>'
+      +'<div class="cprev">'+(conv.has_image?'📷 ':'')+( conv.last_message||'')+'</div>'
+      +'<div class="ctags">'+th+'</div></div>';
+    div.addEventListener('click',function(e){if(e.target.type!=='checkbox')selectConv(conv);});
+    list.appendChild(div);
+  });
+}
+
+// Override applyFilters to include order status filter
+var _origApplyFilters=applyFilters;
+function applyFilters(){
+  _origApplyFilters();
+  if(aOSF!==null){
+    filtC=filtC.filter(function(c){return c.order_status===aOSF;});
+    renderList();updateBulkBtn();
+  }
+  buildOSFilter();
+}
+
+// Override selectConv to populate order status dropdown
+var _origSelectConv=selectConv;
+async function selectConv(conv){
+  await _origSelectConv(conv);
+  var sel=document.getElementById('convos_select');
+  if(!sel)return;
+  sel.innerHTML='<option value="">No status</option>';
+  orderStatuses.forEach(function(os){
+    sel.innerHTML+='<option value="'+os.name+'"'+(conv.order_status===os.name?' selected':'')+'>'+os.name+'</option>';
+  });
+}
+
+async function setConvOrderStatus(val){
+  if(!selC)return;
+  selC.order_status=val||null;
+  var i=allC.findIndex(function(c){return c.userId===selC.userId;});if(i>=0)allC[i].order_status=val||null;
+  await post({action:'set_order_status',sender_id:selC.sender_id,page_id:selC.page_id,user_ids:[selC.userId],order_status:val||null});
+  renderList();showToast('Status updated','success');
+}
+
+// ORDER STATUS MANAGER
+function openOSMgr(){renderOSMgr();document.getElementById('osmgrmodal').classList.add('open');}
+function closeOSMgr(){document.getElementById('osmgrmodal').classList.remove('open');}
+function renderOSMgr(){
+  var list=document.getElementById('osmgrlist');
+  if(!orderStatuses.length){list.innerHTML='<div style="text-align:center;color:#aaa;padding:12px;font-size:12px">No statuses</div>';return;}
+  list.innerHTML='';
+  orderStatuses.forEach(function(os){
+    var div=document.createElement('div');div.className='tmgritem';
+    div.innerHTML='<div class="tmgrname"><span style="background:'+os.color+';color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">'+os.name+'</span></div><button class="tmgrdel" onclick="delOS('+os.id+')">x</button>';
+    list.appendChild(div);
+  });
+}
+async function addOS(){
+  var name=document.getElementById('osname').value.trim();
+  var color=document.getElementById('oscolor').value;
+  if(!name)return;
+  await post({action:'add_order_status',name:name,color:color});
+  orderStatuses.push({id:Date.now(),name:name,color:color});
+  document.getElementById('osname').value='';
+  buildOSFilter();renderOSMgr();showToast('Status added','success');
+  loadInbox(true);
+}
+async function delOS(id){
+  if(!confirm('Delete this status?'))return;
+  await post({action:'delete_order_status',id:id});
+  orderStatuses=orderStatuses.filter(function(o){return o.id!==id;});
+  buildOSFilter();renderOSMgr();showToast('Deleted','info');
+}
+
+// BULK ORDER STATUS
+function openBulkOS(){
+  var tgts=selIDs.size>0?allC.filter(function(c){return selIDs.has(c.userId);}):filtC;
+  document.getElementById('bosinfo').textContent=tgts.length+' conversations';
+  var sel=document.getElementById('bosselect');
+  sel.innerHTML='<option value="">No status</option>';
+  orderStatuses.forEach(function(os){sel.innerHTML+='<option value="'+os.name+'">'+os.name+'</option>';});
+  document.getElementById('bulkosmodal').classList.add('open');
+}
+function closeBulkOS(){document.getElementById('bulkosmodal').classList.remove('open');}
+async function applyBulkOS(){
+  var val=document.getElementById('bosselect').value;
+  var tgts=selIDs.size>0?allC.filter(function(c){return selIDs.has(c.userId);}):filtC;
+  var uids=tgts.map(function(c){return c.userId;});
+  tgts.forEach(function(c){c.order_status=val||null;var i=allC.findIndex(function(a){return a.userId===c.userId;});if(i>=0)allC[i].order_status=val||null;});
+  await post({action:'set_order_status',sender_id:'bulk',page_id:'bulk',user_ids:uids,order_status:val||null});
+  closeBulkOS();renderList();showToast(tgts.length+' updated','success');
 }
