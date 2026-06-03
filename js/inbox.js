@@ -1055,7 +1055,7 @@ function applyFilters(){
 // Override selectConv to populate order status dropdown
 var _origSelectConv=selectConv;
 async function selectConv(conv){
-  await _origSelectConv(conv);
+  _origSelectConv(conv);
   var sel=document.getElementById('convos_select');
   if(!sel)return;
   sel.innerHTML='<option value="">No status</option>';
