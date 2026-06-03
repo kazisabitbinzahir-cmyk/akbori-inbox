@@ -945,6 +945,7 @@ initMobile();loadInbox(true);
 function handleNewMessage(payload){
   var msg=payload.new;
   if(!msg||!msg.user_id)return;
+  if(msg.role==='agent')return;
   var conv=allC.find(function(c){return c.user_id===msg.user_id;});
   if(!conv)return;
   conv.messages=conv.messages||[];
