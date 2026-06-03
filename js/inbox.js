@@ -211,7 +211,12 @@ function selectConv(conv){
   document.getElementById('fiinput').value='';
   setMode('text');
   renderMsgs(conv.messages||[]);renderChatTags();renderSB(conv);applyFilters();
-  if(window.innerWidth<=700){document.getElementById('sidebar').classList.add('hidden');document.getElementById('chatarea').classList.add('active');history.pushState({chatOpen:true},'');}
+  if(window.innerWidth<=700){
+    document.getElementById('sidebar').classList.add('hidden');
+    document.getElementById('chatarea').classList.add('active');
+    document.getElementById('topbar').style.display='none';
+    history.pushState({chatOpen:true},'');
+  }
 }
 
 function safeText(t){return (t||'').split('<').join('&lt;').split('>').join('&gt;');}
@@ -267,7 +272,7 @@ function renderMsgs(msgs){
     div.innerHTML='<div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+'</div>'+ids;
     area.appendChild(div);
   });
-  area.scrollTop=area.scrollHeight;
+  setTimeout(function(){area.scrollTop=area.scrollHeight;},50);
 }
 
 document.getElementById('idtog').addEventListener('change',function(){
@@ -684,7 +689,14 @@ function toggleChatPanel(){
   panel.style.display=isOpen?'none':'flex';
 }
 
-function goBack(){document.getElementById('chatarea').classList.remove('active');document.getElementById('sidebar').classList.remove('hidden');selC=null;document.getElementById('estate').style.display='flex';document.getElementById('chatview').style.display='none';}
+function goBack(){
+  document.getElementById('chatarea').classList.remove('active');
+  document.getElementById('sidebar').classList.remove('hidden');
+  document.getElementById('topbar').style.display='';
+  selC=null;
+  document.getElementById('estate').style.display='flex';
+  document.getElementById('chatview').style.display='none';
+}
 function toggleFP(){var p=document.getElementById('fpanel'),i=document.getElementById('fticon');var col=p.classList.contains('collapsed');p.classList.toggle('collapsed',!col);i.textContent=col?'▲':'▼';}
 function initMobile(){if(window.innerWidth<=700){document.getElementById('fpanel').classList.add('collapsed');document.getElementById('ftbar').style.display='flex';}}
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
