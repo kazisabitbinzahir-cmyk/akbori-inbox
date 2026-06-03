@@ -40,6 +40,7 @@ async function loadInbox(silent){
       });
     }
     lastCnt=nc.length;
+    var selPrevLen=selC?(selC.messages||[]).length:-1;
     nc.forEach(function(n){
       var ex=allC.find(function(c){return c.userId===n.userId;});
       if(ex){n.human_active=ex.human_active;n.notes=ex.notes!==undefined?ex.notes:n.notes;if(ex.id_tag!==undefined)n.id_tag=ex.id_tag;}
@@ -62,7 +63,7 @@ async function loadInbox(silent){
     allC.forEach(function(c){(c.tags||[]).forEach(function(t){allTags.add(t);});});
     buildFilters(); applyFilters(); updateStats();
     if(!silent){document.getElementById('rfbtn').textContent='Fetched';setTimeout(function(){document.getElementById('rfbtn').textContent='Refresh';},2000);}
-    if(selC){ var upd=allC.find(function(c){return c.userId===selC.userId;}); if(upd){var pl=(selC.messages||[]).length;selC=upd;if((upd.messages||[]).length>pl){renderMsgs(upd.messages||[]);renderSB(upd);}} }
+    if(selC){ var upd=allC.find(function(c){return c.userId===selC.userId;}); if(upd){selC=upd;if(selPrevLen>=0&&(upd.messages||[]).length>selPrevLen){renderMsgs(upd.messages||[]);renderSB(upd);}} }
   }catch(e){
     if(!silent){document.getElementById('rfbtn').textContent='Failed';setTimeout(function(){document.getElementById('rfbtn').textContent='Refresh';},2000);}
   }
