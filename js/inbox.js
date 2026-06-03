@@ -10,6 +10,7 @@ var contactFields=[];
 var showArchived=false;
 var tagCategories=[], allTagCategories=[];
 var editTCID=null;
+var globalTags=[];
 
 document.addEventListener('click', function(){
   try{ var ctx=new(window.AudioContext||window.webkitAudioContext)(); snd=function(){var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(0.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);o.start();o.stop(ctx.currentTime+0.3);}; }catch(e){}
@@ -48,6 +49,10 @@ async function loadInbox(silent){
     if(data.tag_categories){
       tagCategories=data.tag_categories;
       allTagCategories=data.tag_categories;
+    }
+    if(data.global_tags){
+      globalTags=data.global_tags;
+      allTags=new Set(globalTags.map(function(t){return t.tag;}));
     }
     if(data.saved_messages)savedMessages=data.saved_messages;
     if(data.contact_fields)contactFields=data.contact_fields;
@@ -374,7 +379,7 @@ function showTS(){
   var v=document.getElementById('tinput').value.toLowerCase();
   var box=document.getElementById('tsugg');
   if(!v){box.style.display='none';return;}
-  var m=Array.from(allTags).filter(function(t){return t.toLowerCase().includes(v);});
+  var m=globalTags.map(function(t){return t.tag;}).filter(function(t){return t.toLowerCase().includes(v);});
   if(!m.length){box.style.display='none';return;}
   box.innerHTML='';
   m.forEach(function(t){var d=document.createElement('div');d.className='tsuggitem';d.textContent=t;d.onclick=function(){document.getElementById('tinput').value=t;box.style.display='none';addTag();};box.appendChild(d);});
@@ -618,10 +623,21 @@ function renderTMgr(){
     list.appendChild(div);
   });
 }
+async function addGTag(){
+  var v=document.getElementById('tmgrin').value.trim();
+  if(!v)return;
+  await post({action:'add_global_tag',tag:v});
+  globalTags.push({tag:v,category:null});
+  allTags.add(v);
+  document.getElementById('tmgrin').value='';
+  renderTMgr();buildFilters();showToast('Tag: '+v,'success');
+}
+
 async function assignTagCategory(tag, categoryName){
-  // Update all tags rows with this tag name
-  await this.helpers ? null : null;
   await post({action:'assign_tag_category',tag:tag,category:categoryName||null});
+  // Update local globalTags
+  var gt=globalTags.find(function(t){return t.tag===tag;});
+  if(gt)gt.category=categoryName||null;
   // Update local tagCategories
   tagCategories.forEach(function(cat){
     if(cat.tags)cat.tags=cat.tags.filter(function(t){return t!==tag;});
@@ -636,11 +652,12 @@ async function assignTagCategory(tag, categoryName){
   showToast('Category assigned','success');
 }
 
-function addGTag(){var v=document.getElementById('tmgrin').value.trim();if(!v)return;allTags.add(v);document.getElementById('tmgrin').value='';renderTMgr();buildFilters();showToast('Tag: '+v,'success');}
+
 async function delGTag(tag){
   if(!confirm('"'+tag+'" delete from all conversations?'))return;
   allC.forEach(function(c){if((c.tags||[]).includes(tag))c.tags=c.tags.filter(function(t){return t!==tag;});});
   allTags.delete(tag);
+  globalTags=globalTags.filter(function(t){return t.tag!==tag;});
   await post({action:'delete_global_tag',tag:tag});
   if(selC){selC.tags=(selC.tags||[]).filter(function(t){return t!==tag;});renderChatTags();}
   renderTMgr();buildFilters();applyFilters();showToast('Deleted: '+tag,'info');
