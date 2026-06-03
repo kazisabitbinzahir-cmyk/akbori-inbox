@@ -575,7 +575,7 @@ async function sendReply(){
   var ip=document.getElementById('iprev');if(ip)ip.style.display='none';
   var fi=document.getElementById('fiinput');if(fi)fi.value='';
   setMode('text');
-  applyFilters();
+  renderList();updateStats();
   fetch(NB+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
     .then(function(res){return res.json();})
     .then(function(data){
