@@ -605,7 +605,18 @@ async function unarchiveConv(userId, senderId, pageId){
   showToast('Unarchived','success');
 }
 
-function openTMgr(){renderTMgr();document.getElementById('tmgrmodal').classList.add('open');}
+function openTMgr(){
+  // Populate category dropdown
+  var sel=document.getElementById('tmgrcat');
+  if(sel){
+    sel.innerHTML='<option value="">No category</option>';
+    tagCategories.forEach(function(cat){
+      sel.innerHTML+='<option value="'+cat.name+'">'+cat.name+'</option>';
+    });
+  }
+  renderTMgr();
+  document.getElementById('tmgrmodal').classList.add('open');
+}
 function closeTMgr(){document.getElementById('tmgrmodal').classList.remove('open');}
 function renderTMgr(){
   var df=document.getElementById('dfrom').value,dt=document.getElementById('dto').value;
@@ -626,10 +637,18 @@ function renderTMgr(){
 async function addGTag(){
   var v=document.getElementById('tmgrin').value.trim();
   if(!v)return;
-  await post({action:'add_global_tag',tag:v});
-  globalTags.push({tag:v,category:null});
+  var catEl=document.getElementById('tmgrcat');
+  var cat=catEl?catEl.value:'';
+  await post({action:'add_global_tag',tag:v,category:cat||null});
+  globalTags.push({tag:v,category:cat||null});
   allTags.add(v);
+  // Update local tagCategories if category selected
+  if(cat){
+    var catObj=tagCategories.find(function(c){return c.name===cat;});
+    if(catObj){catObj.tags=catObj.tags||[];if(!catObj.tags.includes(v))catObj.tags.push(v);}
+  }
   document.getElementById('tmgrin').value='';
+  if(catEl)catEl.value='';
   renderTMgr();buildFilters();showToast('Tag: '+v,'success');
 }
 
