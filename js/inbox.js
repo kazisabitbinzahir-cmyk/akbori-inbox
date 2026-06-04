@@ -1065,6 +1065,7 @@ function toggleSavedBar(){
   if(isOpen){bar.classList.remove('vis');bar.style.display='none';return;}
   var search=document.getElementById('savedsearch');if(search)search.value='';
   filterSavedBar();
+  bar.classList.add('vis');
   bar.style.display='flex';
 }
 
