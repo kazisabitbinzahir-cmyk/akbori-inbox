@@ -921,7 +921,7 @@ document.getElementById('rinput').addEventListener('keydown',function(e){
     if(window.innerWidth>700){e.preventDefault();sendReply();}
   }
 });
-document.addEventListener('click',function(e){if(!e.target.closest('.twrap'))document.getElementById('tsugg').style.display='none';});
+document.addEventListener('click',function(e){if(!e.target.closest('.twrap'))document.getElementById('tsugg').style.display='none';if(!e.target.closest('#savedbar')&&!e.target.closest('#savedtab')){var sb=document.getElementById('savedbar');if(sb){sb.style.display='none';sb.classList.remove('vis');}}});
 window.addEventListener('popstate',function(){if(selC)goBack();});
 
 // Supabase Realtime
