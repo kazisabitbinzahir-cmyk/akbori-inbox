@@ -1276,9 +1276,8 @@ async function sendAudio(){
 }
 
 // IMAGE SEARCH
-async function doImgSearch(imageUrl, btn) {
-  if(typeof btn === 'string') btn = document.getElementById(btn) || event.target;
-  var origText = btn ? btn.textContent : '';
+async function doImgSearch(imageUrl, btnId) {
+  var btn = typeof btnId === 'string' ? document.getElementById(btnId) : btnId;
   if(btn) { btn.textContent='Searching...'; btn.disabled=true; }
   try {
     var res = await fetch(NB+'/action', {
