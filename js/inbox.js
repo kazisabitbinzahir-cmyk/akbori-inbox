@@ -987,7 +987,7 @@ function handleNewMessage(payload){
 if(window.supabase){
   var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   sb.channel('inbox-changes')
-    .on('postgres_changes',{event:'*',schema:'public',table:'conversations'},function(){loadInbox(true);})
+    .on('postgres_changes',{event:'*',schema:'public',table:'conversations'},function(payload){handleConvChange(payload);})
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},handleNewMessage)
     .subscribe();
 }else{
@@ -1100,4 +1100,27 @@ function filterSavedBar(){
     btn.onclick=function(){setMode('text');document.getElementById('rinput').value=s.text;document.getElementById('rinput').focus();bar.style.display='none';};
     bar.appendChild(btn);
   });
+}
+
+function handleConvChange(payload){
+  var updated=payload.new;
+  if(!updated||!updated.user_id)return;
+  var i=allC.findIndex(function(c){return c.user_id===updated.user_id;});
+  if(i>=0){
+    var existing=allC[i];
+    updated.userId=updated.user_id;
+    updated.messages=existing.messages||[];
+    updated.tags=existing.tags||[];
+    updated.contact=existing.contact||{};
+    updated._msgsLoaded=existing._msgsLoaded||false;
+    allC[i]=updated;
+    if(selC&&selC.userId===updated.user_id)selC=updated;
+  }else{
+    updated.userId=updated.user_id;
+    updated.messages=[];
+    updated.tags=[];
+    updated.contact={};
+    allC.unshift(updated);
+  }
+  applyFilters();updateStats();
 }
