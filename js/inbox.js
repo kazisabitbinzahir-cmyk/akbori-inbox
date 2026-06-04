@@ -808,8 +808,8 @@ async function delSaved(id){
 
 function renderSavedBar(){
   var bar=document.getElementById('savedbar');
-  if(!savedMessages.length){bar.innerHTML='';bar.style.display='none';return;}
-  bar.innerHTML='';
+  if(!savedMessages.length){bar.querySelectorAll('.schip').forEach(function(c){c.remove();});bar.style.display='none';return;}
+  bar.querySelectorAll('.schip').forEach(function(c){c.remove();});
   savedMessages.forEach(function(s){
     var btn=document.createElement('button');btn.className='schip';
     btn.textContent=s.title||(s.text.length>30?s.text.slice(0,30)+'...':s.text);
