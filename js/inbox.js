@@ -353,6 +353,7 @@ function renderMsgs(msgs){
     area.appendChild(div);
   });
   setTimeout(function(){area.scrollTop=area.scrollHeight;},50);
+  setTimeout(function(){area.scrollTop=area.scrollHeight;},300);
 }
 
 document.getElementById('idtog').addEventListener('change',function(){
