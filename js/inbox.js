@@ -4,7 +4,7 @@ var allC=[], filtC=[], selC=null, rmode='text', selFile=null;
 var aPF='all', aTF=new Set(), aSF=new Set(), selIDs=new Set(), allTags=new Set();
 var sortOrd='asc', globalAI=true, globalID=false, globalAuto=true;
 var snd=null, lastCnt=0;
-var convOffset=0, convTotal=null;
+var convOffset=0, convTotal=null, convLimit=0;
 var suggestions=[], editSID=null;
 var savedMessages=[], editSMID=null;
 var contactFields=[];
@@ -45,7 +45,7 @@ async function loadInbox(silent){
       var ex=allC.find(function(c){return c.userId===n.userId;});
       if(ex){n.human_active=ex.human_active;n.notes=ex.notes!==undefined?ex.notes:n.notes;if(ex.id_tag!==undefined)n.id_tag=ex.id_tag;}
     });
-    if(convOffset===0){allC=nc;}else{nc.forEach(function(n){if(!allC.find(function(c){return c.userId===n.userId;}))allC.push(n);});if(nc.length<1000)convTotal=allC.length;}
+    if(convOffset===0){allC=nc;}else{nc.forEach(function(n){if(!allC.find(function(c){return c.userId===n.userId;}))allC.push(n);});if(nc.length<convLimit)convTotal=allC.length;}
     if(data.suggestions)suggestions=data.suggestions;
     if(data.tag_categories){
       tagCategories=data.tag_categories;
@@ -58,6 +58,7 @@ async function loadInbox(silent){
     if(data.saved_messages)savedMessages=data.saved_messages;
     if(data.contact_fields)contactFields=data.contact_fields;
     if(data.order_statuses)orderStatuses=data.order_statuses;
+    if(data.limit)convLimit=data.limit;
     if(data.global_ai!==undefined){ globalAI=data.global_ai; document.getElementById('gai').checked=globalAI; document.getElementById('gaibg').style.background=globalAI?'#4caf50':'#e53935'; document.getElementById('gaiknob').style.transform=globalAI?'translateX(0)':'translateX(14px)'; document.getElementById('gailbl').textContent=globalAI?'ON':'OFF'; var gailbl_m=document.getElementById('gailbl_m');if(gailbl_m)gailbl_m.textContent=globalAI?'ON':'OFF'; }
     if(data.global_id!==undefined){ globalID=data.global_id; document.getElementById('gid').checked=globalID; document.getElementById('gidbg').style.background=globalID?'#1877f2':'#ccc'; document.getElementById('gidknob').style.transform=globalID?'translateX(14px)':'translateX(0)'; document.getElementById('gidlbl').textContent=globalID?'ON':'OFF'; var gidlbl_m=document.getElementById('gidlbl_m');if(gidlbl_m)gidlbl_m.textContent=globalID?'ON':'OFF'; }
     if(data.global_auto!==undefined){ globalAuto=data.global_auto; document.getElementById('gauto').checked=globalAuto; document.getElementById('gautobg').style.background=globalAuto?'#4caf50':'#ccc'; document.getElementById('gautoknob').style.transform=globalAuto?'translateX(14px)':'translateX(0)'; document.getElementById('gautolbl').textContent=globalAuto?'ON':'OFF'; var gautolbl_m=document.getElementById('gautolbl_m');if(gautolbl_m)gautolbl_m.textContent=globalAuto?'ON':'OFF'; }
@@ -71,7 +72,7 @@ async function loadInbox(silent){
 
 function manualRefresh(){convOffset=0;convTotal=null;document.getElementById('rfbtn').textContent='...';loadInbox(false);}
 async function loadMore(){
-  convOffset+=1000;
+  convOffset+=convLimit;
   var btn=document.getElementById('loadmorebtn');if(btn)btn.textContent='Loading...';
   await loadInbox(true);
   if(btn)btn.textContent='Load More';
