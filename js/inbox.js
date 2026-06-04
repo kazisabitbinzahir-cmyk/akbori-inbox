@@ -327,7 +327,8 @@ function renderMsgs(msgs){
 
     if(m.has_image&&m.image_url){
       content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img" onload="var a=document.getElementById(\'msgarea\');a.scrollTop=a.scrollHeight;">';
-      if(m.role==='customer')content+='<div style="margin-top:4px" id="srch_'+m.id+'"><button onclick="doImgSearch(\''+m.image_url+'\',\'srch_'+m.id+'\')" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;border:none;cursor:pointer">🔍 Search</button></div>';
+      var srchId='srch_'+(m.id||Math.random().toString(36).slice(2));
+      if(m.role==='customer')content+='<div style="margin-top:4px" id="'+srchId+'"><button onclick="doImgSearch(\''+m.image_url+'\',\''+srchId+'\')" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;border:none;cursor:pointer">🔍 Search</button></div>';
       if(m.text&&m.text!=='(image)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
     } else if(m.has_audio&&m.audio_url){
       content+='<audio controls style="max-width:200px;margin:4px 0"><source src="'+m.audio_url+'"></audio>';
@@ -586,17 +587,32 @@ async function sendReply(){
   }else{
     if(!selFile)return;
     if(selFiles.length>1){
-      // Multiple images - send each one
-      for(var fi2=0;fi2<selFiles.length;fi2++){
-        var b64m=await f2b64(selFiles[fi2]);
-        var pm={action:'reply',sender_id:sendConv.sender_id,page_id:sendConv.page_id,type:'image',image_data:b64m,image_name:selFiles[fi2].name,image_type:selFiles[fi2].type};
-        fetch(NB+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pm)});
-      }
+      var totalFiles=selFiles.length;
+      var filesToSend=selFiles.slice();
+      // Add local preview for each image
+      var now2=new Date();
+      filesToSend.forEach(function(f2){
+        var me2={role:'agent',text:'(image)',image_url:'',has_image:true,time:now2.toISOString(),tag:'Human',sending:true};
+        sendConv.messages=sendConv.messages||[];sendConv.messages.push(me2);
+        sendConv.last_message='(image)';sendConv.last_time=now2.toISOString();
+        var reader=new FileReader();
+        reader.onload=function(ev){me2.image_url=ev.target.result;if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);};
+        reader.readAsDataURL(f2);
+      });
+      var ci2=allC.findIndex(function(c){return c.userId===sendConvId;});
+      if(ci2>=0){allC[ci2]=sendConv;if(ci2>0){var upd2=allC.splice(ci2,1)[0];allC.unshift(upd2);}}
+      if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
       selFile=null;selFiles=[];
       var ip2=document.getElementById('iprev');if(ip2)ip2.style.display='none';
       var fi2e=document.getElementById('fiinput');if(fi2e)fi2e.value='';
       setMode('text');renderList();updateStats();
-      showToast(selFiles.length+' images sending...','info');
+      showToast(totalFiles+' images sending...','info');
+      // Send each image
+      filesToSend.forEach(async function(f2){
+        var b64m=await f2b64(f2);
+        var pm={action:'reply',sender_id:sendConv.sender_id,page_id:sendConv.page_id,type:'image',image_data:b64m,image_name:f2.name,image_type:f2.type};
+        fetch(NB+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pm)});
+      });
       return;
     }
     var b64=await f2b64(selFile);payload.type='image';payload.image_data=b64;payload.image_name=selFile.name;payload.image_type=selFile.type;
