@@ -593,7 +593,7 @@ async function sendReply(){
     .then(function(res){return res.json();})
     .then(function(data){
       me.sending=false;
-      if(rmode==='image'&&data.image_url)me.image_url=data.image_url;
+      if(data.image_url)me.image_url=data.image_url;
       if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
     })
     .catch(function(e){
