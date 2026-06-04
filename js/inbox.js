@@ -1,6 +1,6 @@
 var NB = window.location.origin + '/webhook';
 var PC = {'A1':'#1877f2','A2':'#0d8a6f','4.0':'#7c3aed','Bag Xpress':'#ea580c','5.0':'#d97706','6.0':'#db2777','8.0':'#64748b','Unknown':'#888'};
-var allC=[], filtC=[], selC=null, rmode='text', selFile=null;
+var allC=[], filtC=[], selC=null, rmode='text', selFile=null, selFiles=[];
 var aPF='all', aTF=new Set(), aSF=new Set(), selIDs=new Set(), allTags=new Set();
 var sortOrd='asc', globalAI=true, globalID=false, globalAuto=true;
 var snd=null, lastCnt=0;
@@ -327,7 +327,7 @@ function renderMsgs(msgs){
 
     if(m.has_image&&m.image_url){
       content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img" onload="var a=document.getElementById(\'msgarea\');a.scrollTop=a.scrollHeight;">';
-      if(m.role==='customer')content+='<div style="margin-top:4px"><a href="https://akbori.xyz/?s='+encodeURIComponent(m.image_url)+'" target="_blank" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;text-decoration:none">🔍 Search</a></div>';
+      if(m.role==='customer')content+='<div style="margin-top:4px" id="srch_'+m.id+'"><button onclick="doImgSearch(\''+m.image_url+'\',\'srch_'+m.id+'\')" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;border:none;cursor:pointer">🔍 Search</button></div>';
       if(m.text&&m.text!=='(image)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
     } else if(m.has_audio&&m.audio_url){
       content+='<audio controls style="max-width:200px;margin:4px 0"><source src="'+m.audio_url+'"></audio>';
@@ -553,8 +553,18 @@ function setMode(m){
 }
 
 function handleFile(e){
-  var f=e.target.files[0];if(!f)return;selFile=f;
-  var r=new FileReader();r.onload=function(ev){var p=document.getElementById('iprev');p.src=ev.target.result;p.style.display='block';};r.readAsDataURL(f);
+  var files=Array.from(e.target.files);if(!files.length)return;
+  selFile=files[0];selFiles=files;
+  var prev=document.getElementById('iprev');
+  if(files.length===1){
+    var r=new FileReader();r.onload=function(ev){prev.src=ev.target.result;prev.style.display='block';};r.readAsDataURL(files[0]);
+    prev.title='';
+  } else {
+    prev.src='';prev.style.display='block';
+    prev.alt=files.length+' images selected';
+    prev.style.cssText='display:block;background:#e3f2fd;color:#1565c0;padding:8px;border-radius:6px;font-size:11px;text-align:center;';
+    prev.outerHTML='<div id="iprev" style="display:block;background:#e3f2fd;color:#1565c0;padding:8px;border-radius:6px;font-size:11px;text-align:center;">'+files.length+' images selected</div>';
+  }
 }
 var ia=document.getElementById('imgarea');
 ia.addEventListener('dragover',function(e){e.preventDefault();ia.classList.add('dov');});
@@ -575,6 +585,20 @@ async function sendReply(){
     payload.type='text';payload.message=txt;
   }else{
     if(!selFile)return;
+    if(selFiles.length>1){
+      // Multiple images - send each one
+      for(var fi2=0;fi2<selFiles.length;fi2++){
+        var b64m=await f2b64(selFiles[fi2]);
+        var pm={action:'reply',sender_id:sendConv.sender_id,page_id:sendConv.page_id,type:'image',image_data:b64m,image_name:selFiles[fi2].name,image_type:selFiles[fi2].type};
+        fetch(NB+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pm)});
+      }
+      selFile=null;selFiles=[];
+      var ip2=document.getElementById('iprev');if(ip2)ip2.style.display='none';
+      var fi2e=document.getElementById('fiinput');if(fi2e)fi2e.value='';
+      setMode('text');renderList();updateStats();
+      showToast(selFiles.length+' images sending...','info');
+      return;
+    }
     var b64=await f2b64(selFile);payload.type='image';payload.image_data=b64;payload.image_name=selFile.name;payload.image_type=selFile.type;
   }
   var now=new Date();
@@ -585,7 +609,7 @@ async function sendReply(){
   if(ci>=0){allC[ci]=sendConv;if(ci>0){var upd=allC.splice(ci,1)[0];allC.unshift(upd);}}
   if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
   var ri=document.getElementById('rinput');if(ri)ri.value='';
-  selFile=null;
+  selFile=null;selFiles=[];
   var ip=document.getElementById('iprev');if(ip)ip.style.display='none';
   var fi=document.getElementById('fiinput');if(fi)fi.value='';
   setMode('text');
@@ -1226,5 +1250,27 @@ async function sendAudio(){
   }catch(e){
     showToast('Send failed','error');
     if(btn)btn.textContent='Send ✓';
+  }
+}
+
+// IMAGE SEARCH
+async function doImgSearch(imageUrl, containerId) {
+  var container = document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML = '<span style="font-size:10px;color:#888">🔍 Searching...</span>';
+  try {
+    var res = await fetch(NB+'/action', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({action:'image_search', image_url: imageUrl, sender_id:'search', page_id:'search'})
+    });
+    var data = await res.json();
+    if(data.search_url) {
+      container.innerHTML = '<a href="'+data.search_url+'" target="_blank" style="font-size:10px;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:8px;text-decoration:none">🔍 View Results ('+data.count+')</a>';
+    } else {
+      container.innerHTML = '<span style="font-size:10px;color:#e53935">No results</span>';
+    }
+  } catch(e) {
+    container.innerHTML = '<span style="font-size:10px;color:#e53935">Search failed</span>';
   }
 }
