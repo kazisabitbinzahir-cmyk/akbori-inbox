@@ -592,7 +592,7 @@ async function sendReply(){
       // Add local preview for each image
       var now2=new Date();
       filesToSend.forEach(function(f2){
-        var me2={role:'agent',text:'(image)',image_url:'',has_image:true,time:now2.toISOString(),tag:'Human',sending:true};
+        var me2={role:'agent',text:'(image)',image_url:'',has_image:true,time:now2.toISOString(),tag:'Human',sending:true,_f:f2};
         sendConv.messages=sendConv.messages||[];sendConv.messages.push(me2);
         sendConv.last_message='(image)';sendConv.last_time=now2.toISOString();
         var reader=new FileReader();
@@ -608,17 +608,23 @@ async function sendReply(){
       setMode('text');renderList();updateStats();
       showToast(totalFiles+' images sending...','info');
       // Send each image
-      filesToSend.forEach(async function(f2){
+      filesToSend.forEach(async function(f2,idx2){
         var b64m=await f2b64(f2);
         var pm={action:'reply',sender_id:sendConv.sender_id,page_id:sendConv.page_id,type:'image',image_data:b64m,image_name:f2.name,image_type:f2.type};
-        fetch(NB+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pm)});
+        fetch(NB+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pm)})
+          .then(function(r){return r.json();})
+          .then(function(d){
+            var m2=sendConv.messages.find(function(m){return m._f===f2;});
+            if(m2){m2.sending=false;if(d.image_url)m2.image_url=d.image_url;}
+            if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
+          });
       });
       return;
     }
     var b64=await f2b64(selFile);payload.type='image';payload.image_data=b64;payload.image_name=selFile.name;payload.image_type=selFile.type;
   }
   var now=new Date();
-  var me={role:'agent',text:payload.message||'(image)',image_url:'',has_image:rmode==='image',time:now.toISOString(),tag:'Human',sending:true};
+  var me={role:'agent',text:payload.message||'(image)',image_url:rmode==='image'&&selFile?URL.createObjectURL(selFile):'',has_image:rmode==='image',time:now.toISOString(),tag:'Human',sending:true};
   sendConv.messages=sendConv.messages||[];sendConv.messages.push(me);
   sendConv.last_message=me.text;sendConv.last_time=now.toISOString();
   var ci=allC.findIndex(function(c){return c.userId===sendConvId;});
@@ -1270,10 +1276,10 @@ async function sendAudio(){
 }
 
 // IMAGE SEARCH
-async function doImgSearch(imageUrl, containerId) {
-  var container = document.getElementById(containerId);
-  if(!container) return;
-  container.innerHTML = '<span style="font-size:10px;color:#888">🔍 Searching...</span>';
+async function doImgSearch(imageUrl, btn) {
+  if(typeof btn === 'string') btn = document.getElementById(btn) || event.target;
+  var origText = btn ? btn.textContent : '';
+  if(btn) { btn.textContent='Searching...'; btn.disabled=true; }
   try {
     var res = await fetch(NB+'/action', {
       method: 'POST',
@@ -1281,12 +1287,13 @@ async function doImgSearch(imageUrl, containerId) {
       body: JSON.stringify({action:'image_search', image_url: imageUrl, sender_id:'search', page_id:'search'})
     });
     var data = await res.json();
-    if(data.search_url) {
-      container.innerHTML = '<a href="'+data.search_url+'" target="_blank" style="font-size:10px;background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:8px;text-decoration:none">🔍 View Results ('+data.count+')</a>';
+    if(data.search_url && data.count > 0) {
+      window.open(data.search_url, '_blank');
+      if(btn) { btn.textContent='🔍 Results ('+data.count+')'; btn.disabled=false; }
     } else {
-      container.innerHTML = '<span style="font-size:10px;color:#e53935">No results</span>';
+      if(btn) { btn.textContent='No results'; btn.disabled=false; }
     }
   } catch(e) {
-    container.innerHTML = '<span style="font-size:10px;color:#e53935">Search failed</span>';
+    if(btn) { btn.textContent='Failed'; btn.disabled=false; }
   }
 }
