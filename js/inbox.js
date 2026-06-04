@@ -326,7 +326,7 @@ function renderMsgs(msgs){
     }
 
     if(m.has_image&&m.image_url){
-      content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img">';
+      content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img" onload="var a=document.getElementById(\'msgarea\');a.scrollTop=a.scrollHeight;">';
       if(m.role==='customer')content+='<div style="margin-top:4px"><a href="https://akbori.xyz/?s='+encodeURIComponent(m.image_url)+'" target="_blank" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;text-decoration:none">🔍 Search</a></div>';
       if(m.text&&m.text!=='(image)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
     } else if(m.has_audio&&m.audio_url){
