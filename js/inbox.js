@@ -1161,7 +1161,7 @@ async function toggleRecording(){
       mediaRecorder=new MediaRecorder(stream);
       mediaRecorder.ondataavailable=function(e){if(e.data.size>0)audioChunks.push(e.data);};
       mediaRecorder.onstop=function(){
-        audioBlob=new Blob(audioChunks,{type:'audio/mp4'});
+        audioBlob=new Blob(audioChunks,{type:'audio/webm'});
         var url=URL.createObjectURL(audioBlob);
         var ap=document.getElementById('audioplayback');
         ap.src=url;
@@ -1206,7 +1206,7 @@ async function sendAudio(){
         page_id:sendConv.page_id,
         type:'audio',
         audio_data:base64,
-        audio_type:'audio/mp4'
+        audio_type:'audio/webm'
       })
     });
     var data=await res.json();
