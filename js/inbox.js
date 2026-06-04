@@ -1280,15 +1280,19 @@ async function doImgSearch(imageUrl, btnId) {
   var btn = typeof btnId === 'string' ? document.getElementById(btnId) : btnId;
   if(btn) { btn.textContent='Searching...'; btn.disabled=true; }
   try {
-    var res = await fetch(NB+'/action', {
+    var res = await fetch('https://api.vecstore.app/api/databases/4/search', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({action:'image_search', image_url: imageUrl, sender_id:'search', page_id:'search'})
+      headers: {'Content-Type':'application/json', 'x-api-key':'vk_6ayE6c5_jSEPRpOOuO49sFMX2MuxhF8WdZ_NilzeAHE'},
+      body: JSON.stringify({image_url: imageUrl, top_k: 100})
     });
     var data = await res.json();
-    if(data.search_url && data.count > 0) {
-      window.open(data.search_url, '_blank');
-      if(btn) { btn.textContent='🔍 Results ('+data.count+')'; btn.disabled=false; }
+    var results = data.results || [];
+    var pids = [];
+    results.forEach(function(r){if(r.metadata&&r.metadata.product_id&&pids.indexOf(r.metadata.product_id)===-1&&pids.length<12)pids.push(r.metadata.product_id);});
+    if(pids.length > 0) {
+      var searchUrl = 'https://akbori.xyz/?vs_results=' + pids.map(function(p){return encodeURIComponent(p);}).join('%2C');
+      window.open(searchUrl, '_blank');
+      if(btn) { btn.textContent='🔍 Results ('+pids.length+')'; btn.disabled=false; }
     } else {
       if(btn) { btn.textContent='No results'; btn.disabled=false; }
     }
