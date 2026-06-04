@@ -481,8 +481,7 @@ async function toggleGAI(checked){
   globalAI=checked;
   document.getElementById('gaibg').style.background=checked?'#4caf50':'#e53935';
   document.getElementById('gaiknob').style.transform=checked?'translateX(0)':'translateX(14px)';
-  document.getElementById('gailbl').textContent=checked?'ON':'OFF'; var gailbl_m=document.getElementById('gailbl_m');if(gailbl_m)gailbl_m.textContent=checked?'ON':'OFF';
-  await post({action:'save_global_ai',global_ai:checked});
+  document.getElementById('gailbl').textContent=checked?'ON':'OFF'; var gailbl_m=document.getElementById('gailbl_m');if(gailbl_m)gailbl_m.textContent=checked?'ON':'OFF'; var gaibg_m=document.getElementById('gaibg_m');if(gaibg_m)gaibg_m.style.background=checked?'#4caf50':'#e53935'; var gaiknob_m=document.getElementById('gaiknob_m');if(gaiknob_m)gaiknob_m.style.transform=checked?'translateX(0)':'translateX(14px)';  await post({action:'save_global_ai',global_ai:checked});
   var isHuman=!checked;
   for(var i=0;i<allC.length;i++){allC[i].human_active=isHuman;await post({action:'toggle_human',sender_id:allC[i].sender_id,page_id:allC[i].page_id,human_active:isHuman});}
   applyFilters();showToast(isHuman?'All AI OFF':'All AI ON',isHuman?'error':'success');
@@ -518,7 +517,7 @@ function toggleGID(checked){
   globalID=checked;
   document.getElementById('gidbg').style.background=checked?'#1877f2':'#ccc';
   document.getElementById('gidknob').style.transform=checked?'translateX(14px)':'translateX(0)';
-  document.getElementById('gidlbl').textContent=checked?'ON':'OFF'; var gidlbl_m=document.getElementById('gidlbl_m');if(gidlbl_m)gidlbl_m.textContent=checked?'ON':'OFF';
+  document.getElementById('gidlbl').textContent=checked?'ON':'OFF'; var gidlbl_m=document.getElementById('gidlbl_m');if(gidlbl_m)gidlbl_m.textContent=checked?'ON':'OFF'; var gidbg_m=document.getElementById('gidbg_m');if(gidbg_m)gidbg_m.style.background=checked?'#1877f2':'#ccc'; var gidknob_m=document.getElementById('gidknob_m');if(gidknob_m)gidknob_m.style.transform=checked?'translateX(14px)':'translateX(0)';
   post({action:'save_global_id',global_id:checked});
 }
 
