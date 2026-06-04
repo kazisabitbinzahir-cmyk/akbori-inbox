@@ -491,7 +491,7 @@ function toggleGAuto(checked){
   globalAuto=checked;
   document.getElementById('gautobg').style.background=checked?'#4caf50':'#ccc';
   document.getElementById('gautoknob').style.transform=checked?'translateX(14px)':'translateX(0)';
-  document.getElementById('gautolbl').textContent=checked?'ON':'OFF'; var gautolbl_m=document.getElementById('gautolbl_m');if(gautolbl_m)gautolbl_m.textContent=checked?'ON':'OFF';
+  document.getElementById('gautolbl').textContent=checked?'ON':'OFF'; var gautolbl_m=document.getElementById('gautolbl_m');if(gautolbl_m)gautolbl_m.textContent=checked?'ON':'OFF'; var gautobg_m=document.getElementById('gautobg_m');if(gautobg_m)gautobg_m.style.background=checked?'#4caf50':'#ccc'; var gautoknob_m=document.getElementById('gautoknob_m');if(gautoknob_m)gautoknob_m.style.transform=checked?'translateX(14px)':'translateX(0)';
   post({action:'save_global_auto',global_auto:checked});
 }
 
