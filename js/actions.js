@@ -246,6 +246,7 @@ async function sendReply(){
     .then(function(data){
       me.sending=false;
       if(data.image_url)me.image_url=data.image_url;
+      if(data.mid)me.mid=data.mid;
       if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
     })
     .catch(function(e){
