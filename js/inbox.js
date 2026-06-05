@@ -1017,9 +1017,9 @@ initMobile();loadInbox(true);
 function handleNewMessage(payload){
   var msg=payload.new;
   if(!msg||!msg.user_id)return;
-  if(msg.role==='agent')return;
   var conv=allC.find(function(c){return c.user_id===msg.user_id;});
   if(!conv)return;
+  if(msg.role==='agent'){var exists=(conv.messages||[]).some(function(m){return m.mid&&m.mid===msg.mid;});if(exists)return;}
   conv.messages=conv.messages||[];
   var exists=conv.messages.some(function(m){return m.id===msg.id;});
   if(exists)return;
