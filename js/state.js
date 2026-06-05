@@ -18,5 +18,7 @@ var globalTags = [];
 var orderStatuses = [];
 var aOSF = null;
 
+var replyToMsg = null;
+
 // Audio recording state
 var mediaRecorder = null, audioChunks = [], audioBlob = null, isRecording = false;
