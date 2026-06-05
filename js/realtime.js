@@ -1,32 +1,9 @@
 // ============================================================
 // realtime.js — Supabase realtime subscriptions
+// SUPABASE_URL and SUPABASE_KEY defined in config.js
 // Future: WebSocket or SSE from VPS backend
 // ============================================================
 
-
-// Supabase Realtime
-// SUPABASE_URL defined in config.js
-// SUPABASE_KEY defined in config.js
-
-// Mobile controls toggle
-function toggleMobileControls(){
-  var panel=document.getElementById('mobilecontrols');
-  if(!panel)return;
-  var isOpen=panel.style.display==='flex';
-  panel.style.display=isOpen?'none':'flex';
-}
-
-document.addEventListener('click',function(e){
-  var panel=document.getElementById('mobilecontrols');
-  if(!panel)return;
-  if(!e.target.closest('.mobile-ctrl-btn')&&!e.target.closest('#mobilecontrols')){
-    panel.style.display='none';
-  }
-});
-
-initMobile();loadInbox(true);
-
-function handleNewMessage(payload){
 function handleNewMessage(payload){
   var msg=payload.new;
   if(!msg||!msg.user_id)return;
@@ -57,6 +34,9 @@ if(window.supabase){
 }else{
   setInterval(function(){loadInbox(true);},10000);
 }
+
+// ORDER STATUS
+var orderStatuses=[];
 function handleConvChange(payload){
   var updated=payload.new;
   if(!updated||!updated.user_id)return;
