@@ -7,10 +7,27 @@ document.addEventListener('click', function(){
 
 async function loadInbox(silent){
   try{
-    var res=await fetch(NB+'/inbox-data'+(convOffset>0?'?offset='+convOffset:''));
+    var params=[];
+    if(convOffset>0)params.push('offset='+convOffset);
+    if(aPF&&aPF!=='all')params.push('page='+encodeURIComponent(aPF));
+    if(aOSF!==null&&aOSF!==undefined)params.push('order_status='+encodeURIComponent(aOSF));
+    if(aSF.has('unread'))params.push('unread=true');
+    if(aSF.has('unanswered'))params.push('unanswered=true');
+    var dfv=document.getElementById('dfrom').value,dtv=document.getElementById('dto').value;
+    if(dfv)params.push('date_from='+dfv);
+    if(dtv)params.push('date_to='+dtv);
+    var sv=document.getElementById('sinput').value.trim();
+    if(sv)params.push('search='+encodeURIComponent(sv));
+    if(aTF.size===1)params.push('tag='+encodeURIComponent([...aTF][0]));
+    var url=NB+'/inbox-data'+(params.length>0?'?'+params.join('&'):'');
+    var res=await fetch(url);
     var data=await res.json();
     if(data.conversations){
-      data.conversations=data.conversations.map(function(c){ c.userId=c.user_id; return c; });
+      data.conversations=data.conversations.map(function(c){
+        c.userId=c.user_id;
+        if(c.messages&&c.messages.length>0)c._msgsLoaded=true;
+        return c;
+      });
     }
     var nc=data.conversations||[];
     if(lastCnt>0&&nc.length>0){
@@ -56,13 +73,20 @@ async function loadInbox(silent){
   }
 }
 
-function manualRefresh(){convOffset=0;convTotal=null;document.getElementById('rfbtn').textContent='...';loadInbox(false);}
+function manualRefresh(){convOffset=0;convTotal=null;document.getElementById('rfbtn').textContent='...';var lm=document.getElementById('loadmorebtn');if(lm)lm.style.display='';loadInbox(false);}
 
 async function loadMore(){
+  var prevLen=allC.length;
   convOffset+=convLimit;
   var btn=document.getElementById('loadmorebtn');if(btn)btn.textContent='Loading...';
   await loadInbox(true);
-  if(btn)btn.textContent='Load More';
+  if(allC.length===prevLen){
+    showToast('No more conversations','info');
+    convTotal=allC.length;
+    var lm=document.getElementById('loadmorebtn');if(lm)lm.style.display='none';
+  } else {
+    if(btn)btn.textContent='Load More';
+  }
 }
 
 function toggleChatPanel(){
