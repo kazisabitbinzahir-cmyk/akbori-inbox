@@ -47,17 +47,6 @@ function renderList(){
 
 function toggleSel(e,uid){e.stopPropagation();if(selIDs.has(uid))selIDs.delete(uid);else selIDs.add(uid);updateBulkBtn();applyFilters();}
 
-document.getElementById('clist').addEventListener('click',function(e){
-  if(e.target.classList.contains('tdel')){
-    e.stopPropagation();var sp=e.target.closest('.ctag');if(!sp)return;
-    var uid=sp.dataset.uid,tag=sp.dataset.tag;var conv=allC.find(function(c){return c.userId===uid;});if(!conv)return;
-    conv.tags=(conv.tags||[]).filter(function(t){return t!==tag;});
-    if(selC&&selC.userId===uid)selC.tags=conv.tags;
-    post({action:'remove_tag',sender_id:conv.sender_id,page_id:conv.page_id,tag:tag});
-    buildFilters();applyFilters();
-  }
-});
-
 function renderChatTags(){
   if(!selC)return;
   var box=document.getElementById('chattagbar');
@@ -136,9 +125,6 @@ document.getElementById('idtog').addEventListener('change',function(){
 });
 function onIDToggle(){}
 
-function openLB(url){document.getElementById('limg').src=url;document.getElementById('lbox').classList.add('open');}
-function closeLB(){document.getElementById('lbox').classList.remove('open');}
-
 function renderCFMgr(){
   var list=document.getElementById('cfmgrlist');
   list.innerHTML='';
@@ -212,6 +198,8 @@ function renderTMgr(){
     nocat.forEach(renderTagRow);
   }
 }
+async function addGTag(){
+  var v=document.getElementById('tmgrin').value.trim();
 function renderSavedMgr(){
   var list=document.getElementById('savedmgrlist');
   if(!savedMessages.length){list.innerHTML='<div style="text-align:center;color:#aaa;padding:12px;font-size:12px">No saved messages</div>';return;}
@@ -224,12 +212,6 @@ function renderSavedMgr(){
 }
 function editSaved(id){
   var s=savedMessages.find(function(s){return s.id===id;});if(!s)return;
-  editSMID=id;
-  document.getElementById('savedtitle').value=s.title||'';
-  document.getElementById('savedtext').value=s.text||'';
-  document.getElementById('savedmgradd').textContent='Update';
-  document.getElementById('savedtitle').focus();
-}
 function renderSavedBar(){
   var bar=document.getElementById('savedbar');
   if(!savedMessages.length){bar.querySelectorAll('.schip').forEach(function(c){c.remove();});bar.style.display='none';return;}
@@ -244,6 +226,8 @@ function renderSavedBar(){
 }
 
 function openSMgr(){renderSMgr();document.getElementById('smgrmodal').classList.add('open');}
+function closeSMgr(){editSID=null;document.getElementById('smgradd').textContent='+ Add';document.getElementById('smgrmodal').classList.remove('open');}
+function renderSMgr(){
 function renderSMgr(){
   var list=document.getElementById('smgrlist');
   if(!suggestions.length){list.innerHTML='<div style="text-align:center;color:#aaa;padding:12px;font-size:12px">No suggestions</div>';return;}
@@ -293,6 +277,7 @@ async function delSugg(id){
 }
 
 function renderSB(conv){
+function renderSB(conv){
   var bar=document.getElementById('suggbar');
   var lm=(conv.messages||[]).filter(function(m){return m.role==='customer';}).slice(-1)[0];
   if(!lm){bar.classList.remove('vis');bar.innerHTML='';return;}
@@ -320,6 +305,8 @@ function renderSB(conv){
   bar.classList.add('vis');
 }
 
+function toggleChatPanel(){
+  var panel=document.getElementById('chatpanel');
 function renderOSMgr(){
   var list=document.getElementById('osmgrlist');
   if(!orderStatuses.length){list.innerHTML='<div style="text-align:center;color:#aaa;padding:12px;font-size:12px">No statuses</div>';return;}
@@ -330,6 +317,8 @@ function renderOSMgr(){
     list.appendChild(div);
   });
 }
+async function addOS(){
+  var name=document.getElementById('osname').value.trim();
 
 // Conversation list click handler (tag delete)
 document.getElementById('clist').addEventListener('click',function(e){
@@ -342,5 +331,3 @@ document.getElementById('clist').addEventListener('click',function(e){
     buildFilters();applyFilters();
   }
 });
-
-function renderChatTags(){
