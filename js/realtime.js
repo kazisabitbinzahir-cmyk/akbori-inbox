@@ -9,7 +9,7 @@ function handleNewMessage(payload){
   if(!msg||!msg.user_id)return;
   var conv=allC.find(function(c){return c.user_id===msg.user_id;});
   if(!conv)return;
-  if(msg.role==='agent'){var exists=(conv.messages||[]).some(function(m){return m.mid&&m.mid===msg.mid;});if(exists)return;}
+  if(msg.role==='agent'){var sendingLocal=conv.messages.find(function(m){return m.sending&&m.has_image===!!msg.has_image;});if(sendingLocal){sendingLocal.sending=false;sendingLocal.mid=msg.mid;sendingLocal.id=msg.id;if(msg.image_url)sendingLocal.image_url=msg.image_url;renderMsgs(conv.messages);return;}}
   conv.messages=conv.messages||[];
   var exists=conv.messages.some(function(m){return m.id===msg.id;});
   if(exists)return;
