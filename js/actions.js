@@ -179,6 +179,21 @@ ia.addEventListener('drop',function(e){e.preventDefault();ia.classList.remove('d
 
 function f2b64(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result.split(',')[1]);};r.onerror=rej;r.readAsDataURL(f);});}
 
+function setReplyTo(msg){
+  replyToMsg=msg;
+  var bar=document.getElementById('replybar');
+  if(!bar)return;
+  var preview=msg.has_image?'📷 Image':msg.has_audio?'🎵 Audio':(msg.text||'').slice(0,60);
+  bar.innerHTML='<div style="display:flex;align-items:center;gap:6px;padding:4px 8px;background:#f0f7ff;border-left:3px solid #1877f2;border-radius:6px;font-size:11px;color:#555;flex:1">↩ <span>'+preview+'</span></div><button onclick="clearReplyTo()" style="background:none;border:none;cursor:pointer;font-size:14px;color:#aaa;padding:2px 6px;">×</button>';
+  bar.style.display='flex';
+}
+
+function clearReplyTo(){
+  replyToMsg=null;
+  var bar=document.getElementById('replybar');
+  if(bar)bar.style.display='none';
+}
+
 async function sendReply(){
   if(!selC)return;
   var sendConv=selC;
@@ -188,7 +203,7 @@ async function sendReply(){
   if(rmode==='text'){
     var txt=document.getElementById('rinput').value.trim();if(!txt)return;
     if(showID)txt=txt+'\n\nID: '+sendConv.sender_id;
-    payload.type='text';payload.message=txt;
+    payload.type='text';payload.message=txt;if(replyToMsg&&replyToMsg.mid)payload.reply_to_mid=replyToMsg.mid;
   }else{
     if(!selFile)return;
     if(selFiles.length>1){
@@ -226,7 +241,7 @@ async function sendReply(){
       });
       return;
     }
-    var b64=await f2b64(selFile);payload.type='image';payload.image_data=b64;payload.image_name=selFile.name;payload.image_type=selFile.type;
+    var b64=await f2b64(selFile);payload.type='image';payload.image_data=b64;payload.image_name=selFile.name;payload.image_type=selFile.type;if(replyToMsg&&replyToMsg.mid)payload.reply_to_mid=replyToMsg.mid;
   }
   var now=new Date();
   var me={role:'agent',text:payload.message||'(image)',image_url:rmode==='image'&&selFile?URL.createObjectURL(selFile):'',has_image:rmode==='image',time:now.toISOString(),tag:'Human',sending:true};
@@ -235,7 +250,7 @@ async function sendReply(){
   var ci=allC.findIndex(function(c){return c.userId===sendConvId;});
   if(ci>=0){allC[ci]=sendConv;if(ci>0){var upd=allC.splice(ci,1)[0];allC.unshift(upd);}}
   if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
-  var ri=document.getElementById('rinput');if(ri)ri.value='';
+  var ri=document.getElementById('rinput');if(ri)ri.value='';clearReplyTo();
   selFile=null;selFiles=[];
   var ip=document.getElementById('iprev');if(ip)ip.style.display='none';
   var fi=document.getElementById('fiinput');if(fi)fi.value='';
