@@ -1,13 +1,9 @@
-// ============================================================
 // main.js — app init, data loading, event listeners
-// ============================================================
 
 // Sound init
+document.addEventListener('click', function(){
   try{ var ctx=new(window.AudioContext||window.webkitAudioContext)(); snd=function(){var o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.setValueAtTime(0.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);o.start();o.stop(ctx.currentTime+0.3);}; }catch(e){}
 }, {once:true});
-
-function post(data){ return fetch(NB+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); }
-
 
 async function loadInbox(silent){
   try{
@@ -61,6 +57,7 @@ async function loadInbox(silent){
 }
 
 function manualRefresh(){convOffset=0;convTotal=null;document.getElementById('rfbtn').textContent='...';loadInbox(false);}
+
 async function loadMore(){
   convOffset+=convLimit;
   var btn=document.getElementById('loadmorebtn');if(btn)btn.textContent='Loading...';
@@ -83,19 +80,30 @@ function goBack(){
   document.getElementById('estate').style.display='flex';
   document.getElementById('chatview').style.display='none';
 }
+
 function toggleFP(){var p=document.getElementById('fpanel'),i=document.getElementById('fticon');var col=p.classList.contains('collapsed');p.classList.toggle('collapsed',!col);i.textContent=col?'▲':'▼';}
+
 function initMobile(){if(window.innerWidth<=700){document.getElementById('fpanel').classList.add('collapsed');document.getElementById('ftbar').style.display='flex';}}
+
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
 
-document.getElementById('rinput').addEventListener('keydown',function(e){
-
-// Mobile controls toggle
 function toggleMobileControls(){
   var panel=document.getElementById('mobilecontrols');
   if(!panel)return;
   var isOpen=panel.style.display==='flex';
   panel.style.display=isOpen?'none':'flex';
 }
+
+
+document.getElementById('rinput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&!e.shiftKey){
+    if(window.innerWidth>700){e.preventDefault();sendReply();}
+  }
+});
+
+document.addEventListener('click',function(e){if(!e.target.closest('.twrap'))document.getElementById('tsugg').style.display='none';if(!e.target.closest('#savedbar')&&!e.target.closest('#savedtab')){var sb=document.getElementById('savedbar');if(sb){sb.style.display='none';sb.classList.remove('vis');}}});
+
+window.addEventListener('popstate',function(){if(selC)goBack();});
 
 document.addEventListener('click',function(e){
   var panel=document.getElementById('mobilecontrols');
@@ -104,35 +112,6 @@ document.addEventListener('click',function(e){
     panel.style.display='none';
   }
 });
-
-initMobile();loadInbox(true);
-
-function toggleSavedBar(){
-  var bar=document.getElementById('savedbar');
-  var isOpen=bar.classList.contains('vis');
-  if(isOpen){bar.classList.remove('vis');bar.style.display='none';return;}
-  var search=document.getElementById('savedsearch');if(search)search.value='';
-  filterSavedBar();
-  bar.classList.add('vis');
-  bar.style.display='flex';
-}
-
-function filterSavedBar(){
-  var bar=document.getElementById('savedbar');
-  var search=document.getElementById('savedsearch');
-  var v=search?search.value.toLowerCase():'';
-  var filtered=savedMessages.filter(function(s){return !v||(s.title||'').toLowerCase().includes(v)||(s.text||'').toLowerCase().includes(v);});
-  var chips=bar.querySelectorAll('.schip');
-  chips.forEach(function(c){c.remove();});
-  filtered.forEach(function(s){
-    var btn=document.createElement('button');btn.className='schip';
-    btn.textContent=s.title||(s.text.length>30?s.text.slice(0,30)+'...':s.text);
-    btn.title=s.text;
-    btn.onclick=function(){setMode('text');document.getElementById('rinput').value=s.text;document.getElementById('rinput').focus();bar.style.display='none';};
-    bar.appendChild(btn);
-  });
-}
-
 
 // Startup
 initMobile();
