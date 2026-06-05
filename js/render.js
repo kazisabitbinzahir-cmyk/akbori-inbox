@@ -87,7 +87,7 @@ function renderMsgs(msgs,preserveScroll){
     }
 
     if(m.has_image&&m.image_url){
-      content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img" onload="var a=document.getElementById(\'msgarea\');a.scrollTop=a.scrollHeight;">';
+      content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img" onload="if(!window._preserveScroll){var a=document.getElementById(\'msgarea\');a.scrollTop=a.scrollHeight;}">';
       var srchId='srch_'+(m.id||Math.random().toString(36).slice(2));
       if(m.role==='customer')content+='<div style="margin-top:4px" id="'+srchId+'"><button onclick="doImgSearch(\''+m.image_url+'\',\''+srchId+'\')" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;border:none;cursor:pointer">🔍 Search</button></div>';
       if(m.text&&m.text!=='(image)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
