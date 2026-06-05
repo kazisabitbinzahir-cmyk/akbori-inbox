@@ -140,7 +140,7 @@ function loadPrevMsgs(conv){
   var oldest=conv.messages&&conv.messages[0];
   if(!oldest){if(btn)btn.remove();return;}
   var oldScrollHeight=area.scrollHeight;
-  fetch(SUPABASE_URL+'/rest/v1/messages?user_id=eq.'+conv.user_id+'&time=lt.'+encodeURIComponent(oldest.time)+'&order=time.desc&limit=5',{
+  fetch(SUPABASE_URL+'/rest/v1/messages?user_id=eq.'+conv.user_id+'&time=lt.'+encodeURIComponent(oldest.time)+'&order=time.desc&limit=10',{
     headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
   }).then(function(r){return r.json();}).then(function(older){
     if(!older||older.length===0){
