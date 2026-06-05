@@ -220,7 +220,7 @@ async function sendReply(){
           .then(function(r){return r.json();})
           .then(function(d){
             var m2=sendConv.messages.find(function(m){return m._f===f2;});
-            if(m2){m2.sending=false;if(d.image_url)m2.image_url=d.image_url;}
+            if(m2){m2.sending=false;if(d.image_url)m2.image_url=d.image_url;if(d.mid)m2.mid=d.mid;}
             if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
           });
       });
