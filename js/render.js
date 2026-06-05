@@ -62,6 +62,7 @@ function safeText(t){return (t||'').split('<').join('&lt;').split('>').join('&gt
 function nl2br(t){return (t||'').split('\n').join('<br>');}
 
 function renderMsgs(msgs,preserveScroll){
+  window._preserveScroll=!!preserveScroll;
   var area=document.getElementById('msgarea');
   var showID=document.getElementById('idtog').checked;
   area.innerHTML='';
