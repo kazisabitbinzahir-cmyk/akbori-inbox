@@ -91,8 +91,8 @@ function renderMsgs(msgs,preserveScroll){
       var srchId='srch_'+(m.id||Math.random().toString(36).slice(2));
       if(m.role==='customer'){
         var _sc=window._imgSearchCache&&window._imgSearchCache[m.image_url];
-        var _sbtn=_sc&&_sc.count>0?'<button onclick="window.open(\''+_sc.url+'\',\'_blank\')" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;border:none;cursor:pointer">🔍 Results ('+_sc.count+')</button>':_sc&&_sc.count===0?'<button disabled style="font-size:10px;background:#f5f5f5;color:#aaa;padding:2px 7px;border-radius:8px;border:none">No results</button>':'<button onclick="doImgSearch(\''+m.image_url+'\',\''+srchId+'\')" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;border:none;cursor:pointer">🔍 Search</button>';
-        content+='<div style="margin-top:4px" id="'+srchId+'">'+_sbtn+'</div>';
+        var _resultTxt=_sc&&_sc.url?'<div class="srch-result" style="font-size:10px;color:#1565c0;margin-top:2px;cursor:pointer;" onclick="window.open(\''+_sc.url+'\',\'_blank\')">✅ '+_sc.count+' results found</div>':'';
+        content+='<div style="margin-top:4px" id="'+srchId+'"><button onclick="doImgSearch(\''+m.image_url+'\',\''+srchId+'\')" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;border:none;cursor:pointer">🔍 Search</button>'+_resultTxt+'</div>';
       }
       if(m.text&&m.text!=='(image)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
     } else if(m.has_audio&&m.audio_url){
