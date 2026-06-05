@@ -26,7 +26,7 @@ function selectConv(conv){
   document.getElementById('iprev').style.display='none';
   document.getElementById('fiinput').value='';
   setMode('text');
-  renderMsgs(conv.messages||[]);renderChatTags();renderSB(conv);renderSavedBar();renderList();
+  renderMsgs(conv.messages||[]);renderChatTags();renderSB(conv);renderSavedBar();renderList();initMsgScroll(conv);
   var _ossel=document.getElementById('convos_select');if(_ossel){_ossel.innerHTML='<option value="">No status</option>';orderStatuses.forEach(function(os){_ossel.innerHTML+='<option value="'+os.name+'"'+(conv.order_status===os.name?' selected':'')+'>'+os.name+'</option>';});}
   if(window.innerWidth<=700){
     document.getElementById('sidebar').classList.add('hidden');
@@ -34,7 +34,7 @@ function selectConv(conv){
     document.getElementById('topbar').style.display='none';
     history.pushState({chatOpen:true},'');
   }
-  if(!conv._msgsLoaded){conv._msgsLoaded=true;fetch(SUPABASE_URL+'/rest/v1/messages?user_id=eq.'+conv.user_id+'&order=time.asc',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}).then(function(r){return r.json();}).then(function(msgs){conv.messages=msgs;var i=allC.findIndex(function(c){return c.userId===conv.userId;});if(i>=0)allC[i].messages=msgs;if(selC&&selC.userId===conv.userId){renderMsgs(msgs);renderSB(conv);}}).catch(function(){conv._msgsLoaded=false;});}
+  if(!conv._msgsLoaded){conv._msgsLoaded=true;fetch(SUPABASE_URL+'/rest/v1/messages?user_id=eq.'+conv.user_id+'&order=time.asc',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}).then(function(r){return r.json();}).then(function(msgs){conv.messages=msgs;var i=allC.findIndex(function(c){return c.userId===conv.userId;});if(i>=0)allC[i].messages=msgs;if(selC&&selC.userId===conv.userId){renderMsgs(msgs);renderSB(conv);initMsgScroll(conv);}}).catch(function(){conv._msgsLoaded=false;});}
 }
 
 function onIDToggle(){}
