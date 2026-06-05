@@ -117,51 +117,51 @@ function renderMsgs(msgs){
   setTimeout(function(){area.scrollTop=area.scrollHeight;},300);
 }
 
-// Messages scroll up — load older messages
-var _msgScrollBusy=false;
+// Messages — load previous button
 function initMsgScroll(conv){
   var area=document.getElementById('msgarea');
   if(!area)return;
   area.onscroll=null;
-  area.onscroll=function(){
-    if(area.scrollTop>60)return;
-    if(_msgScrollBusy)return;
-    if(!conv||!conv.user_id)return;
-    _msgScrollBusy=true;
-    var oldest=conv.messages&&conv.messages[0];
-    if(!oldest){_msgScrollBusy=false;return;}
-    var oldScrollHeight=area.scrollHeight;
-    var indicator=document.createElement('div');
-    indicator.id='msgloadind';
-    indicator.style.cssText='text-align:center;font-size:11px;color:#aaa;padding:6px;';
-    indicator.textContent='Loading...';
-    area.insertBefore(indicator,area.firstChild);
-    fetch(SUPABASE_URL+'/rest/v1/messages?user_id=eq.'+conv.user_id+'&time=lt.'+encodeURIComponent(oldest.time)+'&order=time.desc&limit=10',{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
-    }).then(function(r){return r.json();}).then(function(older){
-      var ind=document.getElementById('msgloadind');if(ind)ind.remove();
-      if(!older||older.length===0){
-        var nomore=document.createElement('div');
-        nomore.style.cssText='text-align:center;font-size:10px;color:#ccc;padding:6px;';
-        nomore.textContent='No older messages';
-        area.insertBefore(nomore,area.firstChild);
-        area.onscroll=null;
-        _msgScrollBusy=false;
-        return;
-      }
-      older.reverse();
-      conv.messages=older.concat(conv.messages);
-      var i=allC.findIndex(function(c){return c.userId===conv.userId;});
-      if(i>=0)allC[i].messages=conv.messages;
-      renderMsgs(conv.messages);
-      setTimeout(function(){area.scrollTop=area.scrollHeight-oldScrollHeight;},10);
-      _msgScrollBusy=false;
+  // Add "Load previous" button at top
+  var existing=document.getElementById('loadprevbtn');
+  if(existing)existing.remove();
+  var btn=document.createElement('button');
+  btn.id='loadprevbtn';
+  btn.textContent='Load previous messages';
+  btn.style.cssText='display:block;width:100%;padding:6px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;font-size:11px;cursor:pointer;color:#555;margin-bottom:8px;';
+  btn.onclick=function(){loadPrevMsgs(conv);};
+  area.insertBefore(btn,area.firstChild);
+}
+
+function loadPrevMsgs(conv){
+  var area=document.getElementById('msgarea');
+  var btn=document.getElementById('loadprevbtn');
+  if(btn)btn.textContent='Loading...';
+  var oldest=conv.messages&&conv.messages[0];
+  if(!oldest){if(btn)btn.remove();return;}
+  var oldScrollHeight=area.scrollHeight;
+  fetch(SUPABASE_URL+'/rest/v1/messages?user_id=eq.'+conv.user_id+'&time=lt.'+encodeURIComponent(oldest.time)+'&order=time.desc&limit=5',{
+    headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+  }).then(function(r){return r.json();}).then(function(older){
+    if(!older||older.length===0){
+      if(btn){btn.textContent='No older messages';btn.disabled=true;btn.style.color='#aaa';}
+      return;
+    }
+    older.reverse();
+    conv.messages=older.concat(conv.messages);
+    var i=allC.findIndex(function(c){return c.userId===conv.userId;});
+    if(i>=0)allC[i].messages=conv.messages;
+    renderMsgs(conv.messages);
+    setTimeout(function(){area.scrollTop=area.scrollHeight-oldScrollHeight;},10);
+    if(older.length<5){
+      var b=document.getElementById('loadprevbtn');
+      if(b){b.textContent='No older messages';b.disabled=true;b.style.color='#aaa';}
+    } else {
       initMsgScroll(conv);
-    }).catch(function(){
-      var ind=document.getElementById('msgloadind');if(ind)ind.remove();
-      _msgScrollBusy=false;
-    });
-  };
+    }
+  }).catch(function(){
+    if(btn)btn.textContent='Load previous messages';
+  });
 }
 
 function renderSB(conv){
