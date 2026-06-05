@@ -365,4 +365,3 @@ async function delOS(id){
   orderStatuses=orderStatuses.filter(function(o){return o.id!==id;});
   buildOSFilter();renderOSMgr();showToast('Deleted','info');
 }
-
