@@ -61,7 +61,7 @@ function safeText(t){return (t||'').split('<').join('&lt;').split('>').join('&gt
 
 function nl2br(t){return (t||'').split('\n').join('<br>');}
 
-function renderMsgs(msgs){
+function renderMsgs(msgs,preserveScroll){
   var area=document.getElementById('msgarea');
   var showID=document.getElementById('idtog').checked;
   area.innerHTML='';
@@ -113,8 +113,7 @@ function renderMsgs(msgs){
     div.innerHTML='<div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+'</div>'+ids;
     area.appendChild(div);
   });
-  setTimeout(function(){area.scrollTop=area.scrollHeight;},50);
-  setTimeout(function(){area.scrollTop=area.scrollHeight;},300);
+  if(!preserveScroll){setTimeout(function(){area.scrollTop=area.scrollHeight;},50);setTimeout(function(){area.scrollTop=area.scrollHeight;},300);}
 }
 
 // Messages — load previous button
@@ -151,8 +150,9 @@ function loadPrevMsgs(conv){
     conv.messages=older.concat(conv.messages);
     var i=allC.findIndex(function(c){return c.userId===conv.userId;});
     if(i>=0)allC[i].messages=conv.messages;
-    renderMsgs(conv.messages);
-    setTimeout(function(){area.scrollTop=area.scrollHeight-oldScrollHeight;},10);
+    var savedScroll=area.scrollHeight;
+    renderMsgs(conv.messages,true);
+    setTimeout(function(){area.scrollTop=area.scrollHeight-savedScroll;},50);
     if(older.length<5){
       var b=document.getElementById('loadprevbtn');
       if(b){b.textContent='No older messages';b.disabled=true;b.style.color='#aaa';}
