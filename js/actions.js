@@ -38,11 +38,6 @@ function selectConv(conv){
   if(!conv._msgsLoaded){conv._msgsLoaded=true;fetch(SUPABASE_URL+'/rest/v1/messages?user_id=eq.'+conv.user_id+'&order=time.asc',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}).then(function(r){return r.json();}).then(function(msgs){conv.messages=msgs;var i=allC.findIndex(function(c){return c.userId===conv.userId;});if(i>=0)allC[i].messages=msgs;if(selC&&selC.userId===conv.userId){renderMsgs(msgs);renderSB(conv);}}).catch(function(){conv._msgsLoaded=false;});}
 }
 
-function onIDToggle(){}
-
-function openLB(url){document.getElementById('limg').src=url;document.getElementById('lbox').classList.add('open');}
-function closeLB(){document.getElementById('lbox').classList.remove('open');}
-
   });
   setTimeout(function(){area.scrollTop=area.scrollHeight;},50);
   setTimeout(function(){area.scrollTop=area.scrollHeight;},300);
@@ -192,6 +187,8 @@ ia.addEventListener('drop',function(e){e.preventDefault();ia.classList.remove('d
 
 function f2b64(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result.split(',')[1]);};r.onerror=rej;r.readAsDataURL(f);});}
 
+function f2b64(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result.split(',')[1]);};r.onerror=rej;r.readAsDataURL(f);});}
+
 async function sendReply(){
   if(!selC)return;
   var sendConv=selC;
@@ -289,36 +286,6 @@ async function setConvOrderStatus(val){
   renderList();showToast('Status updated','success');
 }
 
-function openOSMgr(){renderOSMgr();document.getElementById('osmgrmodal').classList.add('open');}
-function closeOSMgr(){document.getElementById('osmgrmodal').classList.remove('open');}
-function renderOSMgr(){
-  var list=document.getElementById('osmgrlist');
-  if(!orderStatuses.length){list.innerHTML='<div style="text-align:center;color:#aaa;padding:12px;font-size:12px">No statuses</div>';return;}
-  list.innerHTML='';
-  orderStatuses.forEach(function(os){
-    var div=document.createElement('div');div.className='tmgritem';
-    div.innerHTML='<div class="tmgrname"><span style="background:'+os.color+';color:#fff;padding:1px 7px;border-radius:8px;font-size:11px">'+os.name+'</span></div><button class="tmgrdel" onclick="delOS('+os.id+')">x</button>';
-    list.appendChild(div);
-  });
-}
-async function addOS(){
-  var name=document.getElementById('osname').value.trim();
-  var color=document.getElementById('oscolor').value;
-  if(!name)return;
-  await post({action:'add_order_status',name:name,color:color});
-  orderStatuses.push({id:Date.now(),name:name,color:color});
-  document.getElementById('osname').value='';
-  buildOSFilter();renderOSMgr();showToast('Status added','success');
-  loadInbox(true);
-}
-async function delOS(id){
-  if(!confirm('Delete this status?'))return;
-  await post({action:'delete_order_status',id:id});
-  orderStatuses=orderStatuses.filter(function(o){return o.id!==id;});
-  buildOSFilter();renderOSMgr();showToast('Deleted','info');
-}
-
-function openBulkOS(){
 function openBulkOS(){
   var tgts=selIDs.size>0?allC.filter(function(c){return selIDs.has(c.userId);}):filtC;
   document.getElementById('bosinfo').textContent=tgts.length+' conversations';
@@ -349,4 +316,3 @@ ia.addEventListener('dragleave',function(){ia.classList.remove('dov');});
 ia.addEventListener('drop',function(e){e.preventDefault();ia.classList.remove('dov');var f=e.dataTransfer.files[0];if(f){selFile=f;var r=new FileReader();r.onload=function(ev){var p=document.getElementById('iprev');p.src=ev.target.result;p.style.display='block';};r.readAsDataURL(f);}});
 
 function f2b64(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result.split(',')[1]);};r.onerror=rej;r.readAsDataURL(f);});}
-
