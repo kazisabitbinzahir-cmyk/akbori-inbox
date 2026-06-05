@@ -88,12 +88,6 @@ function initMobile(){if(window.innerWidth<=700){document.getElementById('fpanel
 function showToast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type;t.style.display='block';setTimeout(function(){t.style.display='none';},3000);}
 
 document.getElementById('rinput').addEventListener('keydown',function(e){
-  if(e.key==='Enter'&&!e.shiftKey){
-    if(window.innerWidth>700){e.preventDefault();sendReply();}
-  }
-});
-document.addEventListener('click',function(e){if(!e.target.closest('.twrap'))document.getElementById('tsugg').style.display='none';if(!e.target.closest('#savedbar')&&!e.target.closest('#savedtab')){var sb=document.getElementById('savedbar');if(sb){sb.style.display='none';sb.classList.remove('vis');}}});
-window.addEventListener('popstate',function(){if(selC)goBack();});
 
 // Mobile controls toggle
 function toggleMobileControls(){
@@ -139,18 +133,6 @@ function filterSavedBar(){
   });
 }
 
-
-// Event listeners
-
-document.getElementById('rinput').addEventListener('keydown',function(e){
-  if(e.key==='Enter'&&!e.shiftKey){
-    if(window.innerWidth>700){e.preventDefault();sendReply();}
-  }
-});
-document.addEventListener('click',function(e){if(!e.target.closest('.twrap'))document.getElementById('tsugg').style.display='none';if(!e.target.closest('#savedbar')&&!e.target.closest('#savedtab')){var sb=document.getElementById('savedbar');if(sb){sb.style.display='none';sb.classList.remove('vis');}}});
-window.addEventListener('popstate',function(){if(selC)goBack();});
-
-// Supabase Realtime
 
 // Startup
 initMobile();
