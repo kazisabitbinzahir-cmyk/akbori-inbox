@@ -1,8 +1,6 @@
-// ============================================================
-// api.js — all API calls
+// api.js — API calls
 // post() goes to n8n, sb*() go directly to Supabase
-// Future: replace NB calls with direct SB or VPS API
-// ============================================================
+// Future: replace all n8n calls with direct SB or VPS API
 
 function post(data) {
   return fetch(NB + '/action', {
@@ -28,7 +26,7 @@ function sbGet(table, params) {
 }
 
 function sbPatch(table, match, data) {
-  var params = Object.entries(match).map(function(e) { return e[0] + '=eq.' + e[1]; }).join('&');
+  var params = Object.keys(match).map(function(k) { return k + '=eq.' + match[k]; }).join('&');
   return fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + params, {
     method: 'PATCH',
     headers: sbHeaders(),
@@ -45,7 +43,7 @@ function sbPost(table, data) {
 }
 
 function sbDelete(table, match) {
-  var params = Object.entries(match).map(function(e) { return e[0] + '=eq.' + e[1]; }).join('&');
+  var params = Object.keys(match).map(function(k) { return k + '=eq.' + match[k]; }).join('&');
   return fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + params, {
     method: 'DELETE',
     headers: sbHeaders()
