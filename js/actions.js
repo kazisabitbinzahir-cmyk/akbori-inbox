@@ -218,31 +218,35 @@ async function sendReply(){
         sendConv.messages=sendConv.messages||[];sendConv.messages.push(me2);
         sendConv.last_message='(image)';sendConv.last_time=now2.toISOString();
         var reader=new FileReader();
-        reader.onload=function(ev){me2.image_url=ev.target.result;if(selC&&selC.userId===sendConvId){appendMsg(me2,sendConv.messages);}};
+        reader.onload=function(ev){me2.image_url=ev.target.result;if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}};
         reader.readAsDataURL(f2);
       });
       var ci2=allC.findIndex(function(c){return c.userId===sendConvId;});
       if(ci2>=0){allC[ci2]=sendConv;if(ci2>0){var upd2=allC.splice(ci2,1)[0];allC.unshift(upd2);}}
-      if(selC&&selC.userId===sendConvId){appendMsg(me2,sendConv.messages);}
+      if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
       selFile=null;selFiles=[];
       var ip2=document.getElementById('iprev');if(ip2)ip2.style.display='none';
       var fi2e=document.getElementById('fiinput');if(fi2e)fi2e.value='';
       setMode('text');renderList();updateStats();
       showToast(totalFiles+' images sending...','info');
       // Send each image
-      filesToSend.forEach(async function(f2,idx2){
-        var b64m=await f2b64(f2);
-        var pm={action:'reply',sender_id:sendConv.sender_id,page_id:sendConv.page_id,type:'image',image_data:b64m,image_name:f2.name,image_type:f2.type};
-        fetch(NB+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pm)})
-          .then(function(r){return r.json();})
-          .then(function(d){
-            var m2=sendConv.messages.find(function(m){return m._f===f2;});
-            if(m2){m2.sending=false;if(d.image_url)m2.image_url=d.image_url;if(d.mid)m2.mid=d.mid;}
-            // Update sending indicator in DOM directly — no full re-render
-            var msgEl2=document.getElementById('msg-'+(m2&&(m2.mid||m2.id)||''));
-            if(msgEl2){var meta2=msgEl2.querySelector('.mmeta');if(meta2)meta2.querySelectorAll('span[style*="Sending"]').forEach(function(s){s.remove();});}
-          });
-      });
+      (async function(){
+        for(var idx2=0;idx2<filesToSend.length;idx2++){
+          (function(f2){
+            f2b64(f2).then(function(b64m){
+              var pm={action:'reply',sender_id:sendConv.sender_id,page_id:sendConv.page_id,type:'image',image_data:b64m,image_name:f2.name,image_type:f2.type};
+              fetch(NB+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pm)})
+                .then(function(r){return r.json();})
+                .then(function(d){
+                  var m2=sendConv.messages.find(function(m){return m._f===f2;});
+                  if(m2){m2.sending=false;if(d.image_url)m2.image_url=d.image_url;if(d.mid)m2.mid=d.mid;}
+                  var msgEl2=document.getElementById('msg-'+(m2&&(m2._localId||m2.mid||m2.id)||''));
+                  if(msgEl2){var meta2=msgEl2.querySelector('.mmeta');if(meta2){var spans=meta2.getElementsByTagName('span');for(var si=spans.length-1;si>=0;si--){if(spans[si].textContent.indexOf('Sending')>=0)spans[si].parentNode.removeChild(spans[si]);}}}
+                });
+            });
+          })(filesToSend[idx2]);
+        }
+      })();
       return;
     }
     var b64=await f2b64(selFile);payload.type='image';payload.image_data=b64;payload.image_name=selFile.name;payload.image_type=selFile.type;if(replyToMsg&&replyToMsg.mid)payload.reply_to_mid=replyToMsg.mid;
