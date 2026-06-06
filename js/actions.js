@@ -253,6 +253,7 @@ async function sendReply(){
   if(ci>=0){allC[ci]=sendConv;if(ci>0){var upd=allC.splice(ci,1)[0];allC.unshift(upd);}}
   if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
   var ri=document.getElementById('rinput');if(ri)ri.value='';clearReplyTo();
+  if(selC)initMsgScroll(selC);
   selFile=null;selFiles=[];
   var ip=document.getElementById('iprev');if(ip)ip.style.display='none';
   var fi=document.getElementById('fiinput');if(fi)fi.value='';
