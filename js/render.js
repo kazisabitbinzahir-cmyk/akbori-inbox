@@ -73,7 +73,7 @@ function renderMsgs(msgs,preserveScroll){
 
     if(m.reply_to_mid){
       var quoted=msgs.find(function(q){return q.mid===m.reply_to_mid;});
-      if(!quoted&&selC)quoted=(selC.messages||[]).find(function(q){return q.mid===m.reply_to_mid;});
+      if(!quoted&&replyToMsg&&replyToMsg.mid===m.reply_to_mid)quoted=replyToMsg;
       if(quoted){
         var qcontent='';
         if(quoted.has_image&&quoted.image_url){
@@ -115,11 +115,8 @@ function renderMsgs(msgs,preserveScroll){
     var statusTxt=m.failed?'<span style="color:#e53935;font-size:9px">Failed</span>':m.sending?'<span style="color:#aaa;font-size:9px">Sending...</span>':'';
     var ids=showID&&m.role==='agent'&&selC?'<div class="mid">ID: '+selC.sender_id+'</div>':'';
     var _rmid=m.mid||String(m.id||'');
-    var replyBtn='<button onclick="setReplyTo(\''+_rmid+'\')" style="font-size:18px;background:none;border:none;cursor:pointer;color:#bbb;padding:2px 8px;border-radius:6px;line-height:1;flex-shrink:0;" title="Reply">↩</button>';
-    var isAgent=m.role==='agent';
-    var bubble='<div style="flex:1"><div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+'</div>'+ids+'</div>';
-    var innerHtml=isAgent ? replyBtn+bubble : bubble+replyBtn;
-    div.innerHTML='<div style="display:flex;align-items:center;gap:4px">'+innerHtml+'</div>';
+    var replyBtn='<button onclick="setReplyTo(\''+_rmid+'\')" style="font-size:16px;background:none;border:none;cursor:pointer;color:#bbb;padding:2px 6px;border-radius:6px;line-height:1;" title="Reply">↩</button>';
+    div.innerHTML='<div style="display:flex;align-items:flex-end;gap:4px"><div style="flex:1"><div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+'</div>'+ids+'</div>'+replyBtn+'</div>';
     area.appendChild(div);
   });
   if(!preserveScroll){setTimeout(function(){area.scrollTop=area.scrollHeight;},50);setTimeout(function(){area.scrollTop=area.scrollHeight;},300);}
