@@ -179,7 +179,9 @@ ia.addEventListener('drop',function(e){e.preventDefault();ia.classList.remove('d
 
 function f2b64(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result.split(',')[1]);};r.onerror=rej;r.readAsDataURL(f);});}
 
-function setReplyTo(msg){
+function setReplyTo(mid){
+  var msg=selC&&(selC.messages||[]).find(function(m){return m.mid===mid||String(m.id)===String(mid);});
+  if(!msg)return;
   replyToMsg=msg;
   var bar=document.getElementById('replybar');
   if(!bar)return;
