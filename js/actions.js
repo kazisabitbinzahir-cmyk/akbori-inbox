@@ -218,12 +218,11 @@ async function sendReply(){
         sendConv.messages=sendConv.messages||[];sendConv.messages.push(me2);
         sendConv.last_message='(image)';sendConv.last_time=now2.toISOString();
         var reader=new FileReader();
-        reader.onload=function(ev){me2.image_url=ev.target.result;if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}};
+        reader.onload=function(ev){me2.image_url=ev.target.result;if(selC&&selC.userId===sendConvId){appendMsg(me2,sendConv.messages);}};
         reader.readAsDataURL(f2);
       });
       var ci2=allC.findIndex(function(c){return c.userId===sendConvId;});
       if(ci2>=0){allC[ci2]=sendConv;if(ci2>0){var upd2=allC.splice(ci2,1)[0];allC.unshift(upd2);}}
-      if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
       selFile=null;selFiles=[];
       var ip2=document.getElementById('iprev');if(ip2)ip2.style.display='none';
       var fi2e=document.getElementById('fiinput');if(fi2e)fi2e.value='';
