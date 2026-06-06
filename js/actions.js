@@ -238,7 +238,7 @@ async function sendReply(){
           .then(function(d){
             var m2=sendConv.messages.find(function(m){return m._f===f2;});
             if(m2){m2.sending=false;if(d.mid)m2.mid=d.mid;}
-            if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
+            if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[],true);}
           });
       });
       return;
@@ -264,7 +264,7 @@ async function sendReply(){
     .then(function(data){
       me.sending=false;
       if(data.mid)me.mid=data.mid;
-      if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
+      if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[],true);}
     })
     .catch(function(e){
       me.failed=true;
