@@ -116,7 +116,8 @@ function renderMsgs(msgs,preserveScroll){
     var statusTxt=m.failed?'<span style="color:#e53935;font-size:9px">Failed</span>':m.sending?'<span style="color:#aaa;font-size:9px">Sending...</span>':'';
     var ids=showID&&m.role==='agent'&&selC?'<div class="mid">ID: '+selC.sender_id+'</div>':'';
     var _rmid=m.mid||String(m.id||'');
-    var replyBtn='<button onclick="setReplyTo(\''+_rmid+'\')" style="font-size:18px;background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;line-height:1;" title="Reply">↩</button>';
+    var hasMid=!!(m.mid);
+    var replyBtn=hasMid?'<button onclick="setReplyTo(\''+_rmid+'\')" style="font-size:18px;background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;line-height:1;" title="Reply">↩</button>':'';
     var hasSrch=!!(m.has_image&&m.image_url);
     var sideBtns='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0;">'+(hasSrch?srchBtn:'')+replyBtn+'</div>';
     var bubble='<div style="flex:1"><div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+'</div>'+ids+'</div>';
