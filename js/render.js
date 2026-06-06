@@ -68,7 +68,8 @@ function renderMsgs(msgs,preserveScroll){
   area.innerHTML='';
   msgs.forEach(function(m){
     var div=document.createElement('div');
-    div.className='msg '+(m.role==='customer'?'customer':'agent');
+    div.className='msg '+(m.role==='customer'?'customer':'agent')+(m.sending?' sending':'');
+    div.id='msg-'+(m._localId||m.mid||m.id||'');
     var content='';
 
     if(m.reply_to_mid){
