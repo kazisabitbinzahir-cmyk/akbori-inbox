@@ -218,12 +218,12 @@ async function sendReply(){
         sendConv.messages=sendConv.messages||[];sendConv.messages.push(me2);
         sendConv.last_message='(image)';sendConv.last_time=now2.toISOString();
         var reader=new FileReader();
-        reader.onload=function(ev){me2.image_url=ev.target.result;if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);};
+        reader.onload=function(ev){me2.image_url=ev.target.result;if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}};
         reader.readAsDataURL(f2);
       });
       var ci2=allC.findIndex(function(c){return c.userId===sendConvId;});
       if(ci2>=0){allC[ci2]=sendConv;if(ci2>0){var upd2=allC.splice(ci2,1)[0];allC.unshift(upd2);}}
-      if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
+      if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
       selFile=null;selFiles=[];
       var ip2=document.getElementById('iprev');if(ip2)ip2.style.display='none';
       var fi2e=document.getElementById('fiinput');if(fi2e)fi2e.value='';
@@ -238,7 +238,7 @@ async function sendReply(){
           .then(function(d){
             var m2=sendConv.messages.find(function(m){return m._f===f2;});
             if(m2){m2.sending=false;if(d.image_url)m2.image_url=d.image_url;if(d.mid)m2.mid=d.mid;}
-            if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
+            if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
           });
       });
       return;
@@ -251,7 +251,7 @@ async function sendReply(){
   sendConv.last_message=me.text;sendConv.last_time=now.toISOString();
   var ci=allC.findIndex(function(c){return c.userId===sendConvId;});
   if(ci>=0){allC[ci]=sendConv;if(ci>0){var upd=allC.splice(ci,1)[0];allC.unshift(upd);}}
-  if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
+  if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
   var ri=document.getElementById('rinput');if(ri)ri.value='';clearReplyTo();
   if(selC)initMsgScroll(selC);
   selFile=null;selFiles=[];
@@ -265,11 +265,11 @@ async function sendReply(){
       me.sending=false;
       if(data.image_url)me.image_url=data.image_url;
       if(data.mid)me.mid=data.mid;
-      if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
+      if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
     })
     .catch(function(e){
       me.failed=true;
-      if(selC&&selC.userId===sendConvId)renderMsgs(sendConv.messages||[]);
+      if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
       showToast('Send failed','error');
     });
 }
