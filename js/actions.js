@@ -237,8 +237,10 @@ async function sendReply(){
           .then(function(r){return r.json();})
           .then(function(d){
             var m2=sendConv.messages.find(function(m){return m._f===f2;});
-            if(m2){m2.sending=false;if(d.mid)m2.mid=d.mid;}
-            if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
+            if(m2){m2.sending=false;if(d.image_url)m2.image_url=d.image_url;if(d.mid)m2.mid=d.mid;}
+            // Update sending indicator in DOM directly — no full re-render
+            var msgEl2=document.getElementById('msg-'+(m2&&(m2.mid||m2.id)||''));
+            if(msgEl2){var meta2=msgEl2.querySelector('.mmeta');if(meta2)meta2.querySelectorAll('span[style*="Sending"]').forEach(function(s){s.remove();});}
           });
       });
       return;
@@ -246,7 +248,8 @@ async function sendReply(){
     var b64=await f2b64(selFile);payload.type='image';payload.image_data=b64;payload.image_name=selFile.name;payload.image_type=selFile.type;if(replyToMsg&&replyToMsg.mid)payload.reply_to_mid=replyToMsg.mid;
   }
   var now=new Date();
-  var me={role:'agent',text:payload.message||'(image)',image_url:rmode==='image'&&selFile?URL.createObjectURL(selFile):'',has_image:rmode==='image',time:now.toISOString(),tag:'Human',sending:true,reply_to_mid:replyToMsg?replyToMsg.mid:null};
+  var _localId='local-'+Date.now();
+  var me={role:'agent',text:payload.message||'(image)',image_url:rmode==='image'&&selFile?URL.createObjectURL(selFile):'',has_image:rmode==='image',time:now.toISOString(),tag:'Human',sending:true,reply_to_mid:replyToMsg?replyToMsg.mid:null,_localId:_localId};
   sendConv.messages=sendConv.messages||[];sendConv.messages.push(me);
   sendConv.last_message=me.text;sendConv.last_time=now.toISOString();
   var ci=allC.findIndex(function(c){return c.userId===sendConvId;});
@@ -263,8 +266,11 @@ async function sendReply(){
     .then(function(res){return res.json();})
     .then(function(data){
       me.sending=false;
+      if(data.image_url)me.image_url=data.image_url;
       if(data.mid)me.mid=data.mid;
-      if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
+      // Update sending indicator in DOM directly — no full re-render
+      var msgEl=document.getElementById('msg-'+_localId);
+      if(msgEl){var meta=msgEl.querySelector('.mmeta');if(meta)meta.querySelectorAll('span[style*="Sending"]').forEach(function(s){s.remove();});}
     })
     .catch(function(e){
       me.failed=true;
@@ -406,200 +412,3 @@ document.getElementById('idtog').addEventListener('change',function(){
   document.getElementById('idtknob').style.transform=this.checked?'translateX(14px)':'translateX(0)';
   if(selC){selC.id_tag=this.checked;var i=allC.findIndex(function(c){return c.userId===selC.userId;});if(i>=0)allC[i].id_tag=this.checked;post({action:'save_id_tag',sender_id:selC.sender_id,page_id:selC.page_id,id_tag:this.checked});renderMsgs(selC.messages||[]);}
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
