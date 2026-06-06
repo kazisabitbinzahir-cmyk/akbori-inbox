@@ -7,7 +7,7 @@ function post(data) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
-  });
+  }).then(function(r) { return r.json(); });
 }
 
 function sbHeaders() {
