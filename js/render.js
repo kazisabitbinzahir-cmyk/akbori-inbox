@@ -91,7 +91,7 @@ function renderMsgs(msgs,preserveScroll){
       var srchId='srch_'+(m.id||Math.random().toString(36).slice(2));
       var _sc=window._imgSearchCache&&window._imgSearchCache[m.image_url];
       var _resultTxt=_sc&&_sc.url?'<div class="srch-result" style="font-size:10px;color:#1565c0;margin-top:2px;cursor:pointer;" onclick="window.open(\''+_sc.url+'\',\'_blank\')">✅ '+_sc.count+' results found</div>':'';
-      content+='<div style="margin-top:4px;display:flex;align-items:center;gap:6px;" id="'+srchId+'"><button onclick="doImgSearch(\''+m.image_url+'\',\''+srchId+'\')" style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:8px;border:none;cursor:pointer">🔍 Search</button>'+_resultTxt+'</div>';
+      content+='<div style="margin-top:6px;display:flex;align-items:center;gap:6px;" id="'+srchId+'"><button onclick="doImgSearch(\''+m.image_url+'\',\''+srchId+'\')" style="font-size:13px;background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:8px;border:none;cursor:pointer">🔍 Search</button>'+_resultTxt+'</div>';
       if(m.text&&m.text!=='(image)'&&m.text!=='(message)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
     } else if(m.has_audio&&m.audio_url){
       content+='<audio controls style="max-width:200px;margin:4px 0"><source src="'+m.audio_url+'"></audio>';
@@ -113,8 +113,9 @@ function renderMsgs(msgs,preserveScroll){
     var tstr=m.time?new Date(m.time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'';
     var statusTxt=m.failed?'<span style="color:#e53935;font-size:9px">Failed</span>':m.sending?'<span style="color:#aaa;font-size:9px">Sending...</span>':'';
     var ids=showID&&m.role==='agent'&&selC?'<div class="mid">ID: '+selC.sender_id+'</div>':'';
-    var replyBtn='<button onclick="setReplyTo('+JSON.stringify(m)+')" style="font-size:10px;background:none;border:none;cursor:pointer;color:#aaa;padding:2px 5px;border-radius:6px;" title="Reply">↩</button>';
-    div.innerHTML='<div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+' '+replyBtn+'</div>'+ids;
+    var _rmid=m.mid||String(m.id||'');
+    var replyBtn='<button onclick="setReplyTo(\''+_rmid+'\')" style="font-size:16px;background:none;border:none;cursor:pointer;color:#bbb;padding:2px 6px;border-radius:6px;line-height:1;" title="Reply">↩</button>';
+    div.innerHTML='<div style="display:flex;align-items:flex-end;gap:4px"><div style="flex:1"><div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+'</div>'+ids+'</div>'+replyBtn+'</div>';
     area.appendChild(div);
   });
   if(!preserveScroll){setTimeout(function(){area.scrollTop=area.scrollHeight;},50);setTimeout(function(){area.scrollTop=area.scrollHeight;},300);}
