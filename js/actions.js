@@ -274,7 +274,28 @@ async function sendReply(){
     });
 }
 
-function openBulk(){var tgts=selIDs.size>0?allC.filter(function(c){return selIDs.has(c.userId);}):filtC;var label=selIDs.size===0?' (loaded only — use Send All for all filtered)':'';document.getElementById('binfo').textContent=tgts.length+' recipients'+label;document.getElementById('bulkmodal').classList.add('open');}
+async function openBulk(){
+  document.getElementById('bulkmodal').classList.add('open');
+  if(selIDs.size>0){
+    var tgts=allC.filter(function(c){return selIDs.has(c.userId);});
+    document.getElementById('binfo').textContent=tgts.length+' recipients';
+  } else {
+    document.getElementById('binfo').textContent='Fetching count...';
+    var sv=document.getElementById('sinput').value.trim();
+    var dfv=document.getElementById('dfrom').value,dtv=document.getElementById('dto').value;
+    var filterBody={action:'get_filtered_user_ids'};
+    if(aPF&&aPF!=='all')filterBody.page=aPF;
+    if(aOSF!==null&&aOSF!==undefined)filterBody.order_status=aOSF;
+    if(aSF.has('unread'))filterBody.unread='true';
+    if(aSF.has('unanswered'))filterBody.unanswered='true';
+    if(dfv)filterBody.date_from=dfv;
+    if(dtv)filterBody.date_to=dtv;
+    if(sv)filterBody.search=sv;
+    if(aTF.size===1)filterBody.tag=[...aTF][0];
+    var res=await post(filterBody);
+    document.getElementById('binfo').textContent=(res&&res.count||0)+' recipients';
+  }
+}
 
 function closeBulk(){document.getElementById('bulkmodal').classList.remove('open');}
 
