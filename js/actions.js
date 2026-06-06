@@ -254,7 +254,7 @@ async function sendReply(){
   sendConv.last_message=me.text;sendConv.last_time=now.toISOString();
   var ci=allC.findIndex(function(c){return c.userId===sendConvId;});
   if(ci>=0){allC[ci]=sendConv;if(ci>0){var upd=allC.splice(ci,1)[0];allC.unshift(upd);}}
-  if(selC&&selC.userId===sendConvId){renderMsgs(sendConv.messages||[]);initMsgScroll(sendConv);}
+  if(selC&&selC.userId===sendConvId){appendMsg(me,sendConv.messages);initMsgScroll(sendConv);}
   var ri=document.getElementById('rinput');if(ri)ri.value='';clearReplyTo();
   if(selC)initMsgScroll(selC);
   selFile=null;selFiles=[];
