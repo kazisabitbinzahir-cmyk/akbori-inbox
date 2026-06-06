@@ -214,7 +214,7 @@ async function sendReply(){
       // Add local preview for each image
       var now2=new Date();
       filesToSend.forEach(function(f2){
-        var me2={role:'agent',text:'(image)',image_url:'',has_image:true,time:now2.toISOString(),tag:'Human',sending:true,_f:f2};
+        var me2={role:'agent',text:'(image)',image_url:'',has_image:true,time:now2.toISOString(),tag:'Human',sending:true,_f:f2,_localId:'local-'+Date.now()+'-'+Math.random().toString(36).slice(2)};
         sendConv.messages=sendConv.messages||[];sendConv.messages.push(me2);
         sendConv.last_message='(image)';sendConv.last_time=now2.toISOString();
         var reader=new FileReader();
