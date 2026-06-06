@@ -22,7 +22,7 @@ function handleNewMessage(payload){
     if(globalAuto)checkAndAutoSend(conv,msg);
   }
   applyFilters();updateStats();
-  if(selC&&selC.user_id===msg.user_id){selC=conv;renderMsgs(conv.messages);renderSB(conv);initMsgScroll(conv);}
+  if(selC&&selC.user_id===msg.user_id){selC=conv;appendMsg(msg,conv.messages);renderSB(conv);}
 }
 
 if(window.supabase){
