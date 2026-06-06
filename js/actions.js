@@ -270,7 +270,7 @@ async function sendReply(){
       if(data.mid)me.mid=data.mid;
       // Update sending indicator in DOM directly — no full re-render
       var msgEl=document.getElementById('msg-'+_localId);
-      if(msgEl){var meta=msgEl.querySelector('.mmeta');if(meta)meta.querySelectorAll('span[style*="Sending"]').forEach(function(s){s.remove();});}
+      if(msgEl){var meta=msgEl.querySelector('.mmeta');if(meta){var spans=meta.getElementsByTagName('span');for(var si=spans.length-1;si>=0;si--){if(spans[si].textContent.indexOf('Sending')>=0)spans[si].parentNode.removeChild(spans[si]);}}}
     })
     .catch(function(e){
       me.failed=true;
