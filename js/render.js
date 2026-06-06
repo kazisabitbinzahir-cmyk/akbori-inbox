@@ -229,7 +229,7 @@ function appendMsg(m,msgs){
   var isAgent=m.role==='agent';
   div.innerHTML='<div style="display:flex;align-items:center;gap:2px">'+(isAgent?sideBtns+bubble:bubble+sideBtns)+'</div>';
   area.appendChild(div);
-  area.scrollTop=area.scrollHeight;
+  setTimeout(function(){area.scrollTop=area.scrollHeight;},50);
 }
 
 function renderSB(conv){
