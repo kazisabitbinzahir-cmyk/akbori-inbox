@@ -199,7 +199,7 @@ function appendMsg(m,msgs){
   }
   var srchBtn='';
   if(m.has_image&&m.image_url){
-    content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img">';
+    content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img" onload="var a=document.getElementById(\'msgarea\');if(a)a.scrollTop=a.scrollHeight;">';
     var srchId='srch_'+String(m.id||'');
     srchBtn='<button onclick="doImgSearch(\''+m.image_url+'\',\''+srchId+'\')" id="'+srchId+'" style="font-size:18px;background:none;border:none;cursor:pointer;color:#1565c0;padding:2px 4px;line-height:1;" title="Search">\uD83D\uDD0D</button>';
     if(m.text&&m.text!=='(image)'&&m.text!=='(message)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
