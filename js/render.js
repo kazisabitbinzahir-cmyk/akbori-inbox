@@ -177,6 +177,60 @@ function loadPrevMsgs(conv){
   });
 }
 
+function appendMsg(m,msgs){
+  var area=document.getElementById('msgarea');
+  if(!area)return;
+  var showID=document.getElementById('idtog').checked;
+  var div=document.createElement('div');
+  div.className='msg '+(m.role==='customer'?'customer':'agent')+(m.sending?' sending':'');
+  div.id='msg-'+(m._localId||m.mid||m.id||'');
+  var content='';
+  if(m.reply_to_mid){
+    var allMsgs=msgs||[];
+    var quoted=allMsgs.find(function(q){return q.mid===m.reply_to_mid;});
+    if(quoted){
+      var qcontent='';
+      if(quoted.has_image&&quoted.image_url){qcontent='<img src="'+quoted.image_url+'" style="max-height:40px;border-radius:4px;display:block;margin-bottom:2px">';}
+      else if(quoted.has_audio){qcontent='🎵 (audio)';}
+      else if(quoted.is_like){qcontent='❤️';}
+      else{qcontent=safeText(quoted.text||'');}
+      content+='<div style="background:rgba(0,0,0,0.08);border-left:3px solid #1877f2;padding:4px 8px;border-radius:6px;margin-bottom:4px;font-size:11px;color:#555;max-width:100%">'+qcontent+'</div>';
+    }
+  }
+  var srchBtn='';
+  if(m.has_image&&m.image_url){
+    content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img">';
+    srchBtn='<button onclick="doImgSearch(''+m.image_url+'','srch_'+String(m.id||'')+'')" id="srch_'+String(m.id||'')+'" style="font-size:18px;background:none;border:none;cursor:pointer;color:#1565c0;padding:2px 4px;line-height:1;" title="Search">🔍</button>';
+    if(m.text&&m.text!=='(image)'&&m.text!=='(message)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
+  } else if(m.has_audio&&m.audio_url){
+    content+='<audio controls style="max-width:200px;margin:4px 0"><source src="'+m.audio_url+'"></audio>';
+  } else if(m.is_sticker&&m.sticker_url){
+    content+='<img src="'+m.sticker_url+'" style="max-width:80px;border-radius:4px" alt="sticker">';
+  } else if(m.is_like){
+    content+='<span style="font-size:28px">❤️</span>';
+  } else if(m.share_url){
+    content+='<a href="'+m.share_url+'" target="_blank" style="display:block;background:#f0f7ff;border:1px solid #90caf9;border-radius:8px;padding:8px;color:#1565c0;font-size:12px;text-decoration:none;max-width:200px">'+(m.share_title||m.share_url)+'</a>';
+  } else if(m.location_lat){
+    content+='<a href="https://maps.google.com/?q='+m.location_lat+','+m.location_lng+'" target="_blank" style="display:block;background:#f0f7ff;border:1px solid #90caf9;border-radius:8px;padding:8px;color:#1565c0;font-size:12px;text-decoration:none">📍 Location</a>';
+  } else {
+    content+=nl2br(safeText(m.text||''));
+  }
+  var tb=m.tag==='AI'?'<span class="aitag">AI</span>':m.tag==='Human'?'<span class="hutag">Human</span>':m.tag==='reaction'?'<span style="font-size:9px;background:#fff3e0;color:#e65100;padding:1px 5px;border-radius:6px">reaction</span>':'';
+  var tstr=m.time?new Date(m.time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}):'';
+  var statusTxt=m.failed?'<span style="color:#e53935;font-size:9px">Failed</span>':m.sending?'<span style="color:#aaa;font-size:9px">Sending...</span>':'';
+  var ids=showID&&m.role==='agent'&&selC?'<div class="mid">ID: '+selC.sender_id+'</div>':'';
+  var _rmid=m.mid||String(m.id||'');
+  var hasMid=!!(m.mid);
+  var replyBtn=hasMid?'<button onclick="setReplyTo(''+_rmid+'')" style="font-size:18px;background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;line-height:1;" title="Reply">↩</button>':'';
+  var hasSrch=!!(m.has_image&&m.image_url);
+  var sideBtns='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0;">'+(hasSrch?srchBtn:'')+replyBtn+'</div>';
+  var bubble='<div style="flex:1"><div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+'</div>'+ids+'</div>';
+  var isAgent=m.role==='agent';
+  div.innerHTML='<div style="display:flex;align-items:center;gap:2px">'+(isAgent?sideBtns+bubble:bubble+sideBtns)+'</div>';
+  area.appendChild(div);
+  area.scrollTop=area.scrollHeight;
+}
+
 function renderSB(conv){
   var bar=document.getElementById('suggbar');
   var lm=(conv.messages||[]).filter(function(m){return m.role==='customer';}).slice(-1)[0];
