@@ -191,8 +191,8 @@ function appendMsg(m,msgs){
     if(quoted){
       var qcontent='';
       if(quoted.has_image&&quoted.image_url){qcontent='<img src="'+quoted.image_url+'" style="max-height:40px;border-radius:4px;display:block;margin-bottom:2px">';}
-      else if(quoted.has_audio){qcontent='🎵 (audio)';}
-      else if(quoted.is_like){qcontent='❤️';}
+      else if(quoted.has_audio){qcontent='\uD83C\uDFB5 (audio)';}
+      else if(quoted.is_like){qcontent='\u2764\uFE0F';}
       else{qcontent=safeText(quoted.text||'');}
       content+='<div style="background:rgba(0,0,0,0.08);border-left:3px solid #1877f2;padding:4px 8px;border-radius:6px;margin-bottom:4px;font-size:11px;color:#555;max-width:100%">'+qcontent+'</div>';
     }
@@ -200,18 +200,19 @@ function appendMsg(m,msgs){
   var srchBtn='';
   if(m.has_image&&m.image_url){
     content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img">';
-    srchBtn='<button onclick="doImgSearch(''+m.image_url+'','srch_'+String(m.id||'')+'')" id="srch_'+String(m.id||'')+'" style="font-size:18px;background:none;border:none;cursor:pointer;color:#1565c0;padding:2px 4px;line-height:1;" title="Search">🔍</button>';
+    var srchId='srch_'+String(m.id||'');
+    srchBtn='<button onclick="doImgSearch(\''+m.image_url+'\',\''+srchId+'\')" id="'+srchId+'" style="font-size:18px;background:none;border:none;cursor:pointer;color:#1565c0;padding:2px 4px;line-height:1;" title="Search">\uD83D\uDD0D</button>';
     if(m.text&&m.text!=='(image)'&&m.text!=='(message)')content+='<div style="margin-top:4px">'+nl2br(safeText(m.text))+'</div>';
   } else if(m.has_audio&&m.audio_url){
     content+='<audio controls style="max-width:200px;margin:4px 0"><source src="'+m.audio_url+'"></audio>';
   } else if(m.is_sticker&&m.sticker_url){
     content+='<img src="'+m.sticker_url+'" style="max-width:80px;border-radius:4px" alt="sticker">';
   } else if(m.is_like){
-    content+='<span style="font-size:28px">❤️</span>';
+    content+='<span style="font-size:28px">\u2764\uFE0F</span>';
   } else if(m.share_url){
     content+='<a href="'+m.share_url+'" target="_blank" style="display:block;background:#f0f7ff;border:1px solid #90caf9;border-radius:8px;padding:8px;color:#1565c0;font-size:12px;text-decoration:none;max-width:200px">'+(m.share_title||m.share_url)+'</a>';
   } else if(m.location_lat){
-    content+='<a href="https://maps.google.com/?q='+m.location_lat+','+m.location_lng+'" target="_blank" style="display:block;background:#f0f7ff;border:1px solid #90caf9;border-radius:8px;padding:8px;color:#1565c0;font-size:12px;text-decoration:none">📍 Location</a>';
+    content+='<a href="https://maps.google.com/?q='+m.location_lat+','+m.location_lng+'" target="_blank" style="display:block;background:#f0f7ff;border:1px solid #90caf9;border-radius:8px;padding:8px;color:#1565c0;font-size:12px;text-decoration:none">\uD83D\uDCCD Location</a>';
   } else {
     content+=nl2br(safeText(m.text||''));
   }
@@ -221,7 +222,7 @@ function appendMsg(m,msgs){
   var ids=showID&&m.role==='agent'&&selC?'<div class="mid">ID: '+selC.sender_id+'</div>':'';
   var _rmid=m.mid||String(m.id||'');
   var hasMid=!!(m.mid);
-  var replyBtn=hasMid?'<button onclick="setReplyTo(''+_rmid+'')" style="font-size:18px;background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;line-height:1;" title="Reply">↩</button>':'';
+  var replyBtn=hasMid?'<button onclick="setReplyTo(\''+_rmid+'\')" style="font-size:18px;background:none;border:none;cursor:pointer;color:#bbb;padding:2px 4px;line-height:1;" title="Reply">\u21A9</button>':'';
   var hasSrch=!!(m.has_image&&m.image_url);
   var sideBtns='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0;">'+(hasSrch?srchBtn:'')+replyBtn+'</div>';
   var bubble='<div style="flex:1"><div class="mbubble">'+content+'</div><div class="mmeta">'+tstr+' '+tb+' '+statusTxt+'</div>'+ids+'</div>';
