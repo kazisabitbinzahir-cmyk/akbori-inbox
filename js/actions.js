@@ -179,9 +179,7 @@ ia.addEventListener('drop',function(e){e.preventDefault();ia.classList.remove('d
 
 function f2b64(f){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result.split(',')[1]);};r.onerror=rej;r.readAsDataURL(f);});}
 
-function setReplyTo(mid){
-  var msg=selC&&(selC.messages||[]).find(function(m){return m.mid===mid||String(m.id)===String(mid);});
-  if(!msg)return;
+function setReplyTo(msg){
   replyToMsg=msg;
   var bar=document.getElementById('replybar');
   if(!bar)return;
@@ -246,7 +244,7 @@ async function sendReply(){
     var b64=await f2b64(selFile);payload.type='image';payload.image_data=b64;payload.image_name=selFile.name;payload.image_type=selFile.type;if(replyToMsg&&replyToMsg.mid)payload.reply_to_mid=replyToMsg.mid;
   }
   var now=new Date();
-  var me={role:'agent',text:payload.message||'(image)',image_url:rmode==='image'&&selFile?URL.createObjectURL(selFile):'',has_image:rmode==='image',time:now.toISOString(),tag:'Human',sending:true};
+  var me={role:'agent',text:payload.message||'(image)',image_url:rmode==='image'&&selFile?URL.createObjectURL(selFile):'',has_image:rmode==='image',time:now.toISOString(),tag:'Human',sending:true,reply_to_mid:replyToMsg?replyToMsg.mid:null};
   sendConv.messages=sendConv.messages||[];sendConv.messages.push(me);
   sendConv.last_message=me.text;sendConv.last_time=now.toISOString();
   var ci=allC.findIndex(function(c){return c.userId===sendConvId;});
