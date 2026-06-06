@@ -90,7 +90,7 @@ function renderMsgs(msgs,preserveScroll){
 
     var srchBtn='';
     if(m.has_image&&m.image_url){
-      content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img" onload="if(!window._preserveScroll){var a=document.getElementById(\'msgarea\');a.scrollTop=a.scrollHeight;}">';
+      content+='<img src="'+m.image_url+'" class="mimg" loading="lazy" onclick="openLB(this.src)" alt="img" onload="this.onload=null;if(!window._preserveScroll){var a=document.getElementById(\'msgarea\');a.scrollTop=a.scrollHeight;}">';
       var srchId='srch_'+(m.id||Math.random().toString(36).slice(2));
       var _sc=window._imgSearchCache&&window._imgSearchCache[m.image_url];
       var _resultTxt=_sc&&_sc.url?'<div class="srch-result" style="font-size:10px;color:#1565c0;margin-top:2px;cursor:pointer;" onclick="window.open(\''+_sc.url+'\',\'_blank\')">✅ '+_sc.count+' results found</div>':'';
