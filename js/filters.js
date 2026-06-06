@@ -16,7 +16,7 @@ function updateStats(){
 function isUnan(c){return c.last_role==='customer';}
 
 function buildFilters(){
-  var pages=Array.from(new Set(allC.map(function(c){return c.page_name;}).filter(Boolean)));
+  var pages=Object.values(PC).filter(Boolean);
   var pf=document.getElementById('pfrow');
   var ap=(pf.querySelector('.active')||{}).textContent||'All';
   pf.innerHTML='<button class="fbtn active" onclick="setPF(\'all\',this)">All</button>';
