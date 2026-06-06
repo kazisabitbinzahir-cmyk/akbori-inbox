@@ -82,6 +82,7 @@ function setSort(o,btn){sortOrd=o;document.getElementById('sasc').classList.togg
 
 function applyFilters(){
   var raw=document.getElementById('sinput').value.trim();
+  var hasSearch=raw.length>0;
   var terms=raw.toLowerCase().split(',').join(' ').split(' ').filter(function(s){return s.length>0;});
   var df=document.getElementById('dfrom').value, dt=document.getElementById('dto').value;
   filtC=allC.filter(function(c){
@@ -99,7 +100,10 @@ function applyFilters(){
       });
       if(!ok)return false;
     }
-    if(terms.length>0){
+    // Search: server handles full message search — skip local text filter when search active
+    // Local filter only for non-search cases (sender_id, tags, contact name quick match)
+    // Search active = server already filtered, skip local text filter
+    if(!hasSearch&&terms.length>0){
       var found=terms.some(function(t){
         return (c.sender_id||'').includes(t)||(c.last_message||'').toLowerCase().includes(t)||(c.messages||[]).some(function(m){return (m.text||'').toLowerCase().includes(t);})||(c.tags||[]).some(function(tg){return tg.toLowerCase().includes(t);})||((c.contact&&c.contact.name)||'').toLowerCase().includes(t);
       });
@@ -116,7 +120,13 @@ function applyFilters(){
 
 function onSearchInput(){applyFilters();triggerServerFilter();}
 
-function updateBulkBtn(){var btn=document.getElementById('bbtn');var cnt=selIDs.size>0?selIDs.size:filtC.length;if(cnt>0){btn.classList.add('show');btn.textContent='Bulk ('+cnt+')';}else btn.classList.remove('show');}
+function updateBulkBtn(){
+  var raw=document.getElementById('sinput').value.trim();
+  var btn=document.getElementById('bbtn');
+  // When search active, show filtC count (server-filtered, no local text filter applied)
+  var cnt=selIDs.size>0?selIDs.size:filtC.length;
+  if(cnt>0){btn.classList.add('show');btn.textContent='Bulk ('+cnt+')';}else btn.classList.remove('show');
+}
 
 var _serverFilterTimer=null;
 function triggerServerFilter(){
